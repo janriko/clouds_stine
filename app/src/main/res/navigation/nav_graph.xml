@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/mainFragment">
+
+    <activity
+        android:id="@+id/splash3"
+        android:name="com.example.CloudStine.SplashActivity"
+        android:label="fragment_splash"
+        tools:layout="@layout/activity_splash" />
+
+    <fragment
+        android:id="@+id/mainFragment"
+        android:name="com.example.CloudStine.main.MainFragment"
+        android:label="@string/main_fragment_label"
+        tools:layout="@layout/main_fragment"/>
+
+</navigation>
