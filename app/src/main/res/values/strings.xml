@@ -18,4 +18,5 @@
     <string name="cloud_visibility_label">Sichtweite:</string>
     <string name="no_data">-</string>
     <string name="cloud_height_feet_label">in feet:</string>
+    <string name="cloud_opacity_label">Bewölkung:</string>
 </resources>
