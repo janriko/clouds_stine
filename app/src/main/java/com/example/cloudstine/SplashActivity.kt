@@ -1,4 +1,4 @@
-package com.example.CloudStine
+package com.example.cloudstine
 
 import android.content.Intent
 import android.os.Bundle

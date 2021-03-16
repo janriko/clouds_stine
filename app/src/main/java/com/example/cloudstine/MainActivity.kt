@@ -1,11 +1,11 @@
-package com.example.CloudStine
+package com.example.cloudstine
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
-import com.example.CloudStine.databinding.MainActivityBinding
+import com.example.cloudstine.databinding.MainActivityBinding
 
 class MainActivity : AppCompatActivity() {
 

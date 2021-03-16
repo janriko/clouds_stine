@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.CloudStine">
+    package="com.example.cloudstine">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -14,7 +15,7 @@
         android:theme="@style/Theme.HelloWorld">
 
         <activity
-            android:name="com.example.CloudStine.SplashActivity"
+            android:name="com.example.cloudstine.SplashActivity"
             android:theme="@style/Theme.HelloWorld.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,7 +25,7 @@
         </activity>
 
         <activity
-            android:name="com.example.CloudStine.MainActivity"
+            android:name="com.example.cloudstine.MainActivity"
             android:label="@string/app_name"
             android:theme="@style/Theme.HelloWorld" />
 

@@ -1,4 +1,4 @@
-package com.example.CloudStine.main
+package com.example.cloudstine.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

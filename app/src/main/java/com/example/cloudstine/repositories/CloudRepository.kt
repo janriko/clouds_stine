@@ -1,7 +1,7 @@
-package com.example.CloudStine.repositories
+package com.example.cloudstine.repositories
 
-import com.example.CloudStine.api.UserApiService
-import com.example.CloudStine.api.UserApiService.Companion.BASE_URL
+import com.example.cloudstine.api.UserApiService
+import com.example.cloudstine.api.UserApiService.Companion.BASE_URL
 import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.Retrofit
@@ -14,6 +14,6 @@ class CloudRepository {
 
     private val retrofitService: UserApiService by lazy { retrofit.create(UserApiService::class.java) }
 
-    suspend fun getData(): Response<ResponseBody> = retrofitService.getData()
+    suspend fun getData(locationId: String): Response<ResponseBody> = retrofitService.getData(locationId)
 
 }

@@ -7,22 +7,35 @@
 
     <activity
         android:id="@+id/splash3"
-        android:name="com.example.CloudStine.SplashActivity"
+        android:name="com.example.cloudstine.SplashActivity"
         android:label="fragment_splash"
         tools:layout="@layout/activity_splash" />
 
     <fragment
         android:id="@+id/mainFragment"
-        android:name="com.example.CloudStine.main.MainFragment"
+        android:name="com.example.cloudstine.main.MainFragment"
         android:label="@string/main_fragment_label"
         tools:layout="@layout/main_fragment">
         <action
             android:id="@+id/action_mainFragment_to_webViewFragment"
             app:destination="@id/webViewFragment" />
+        <argument
+            android:name="current_location_id"
+            app:argType="integer"
+            android:defaultValue="0" />
+        <argument
+            android:name="current_location_name"
+            app:argType="string"
+            android:defaultValue="-" />
     </fragment>
     <fragment
         android:id="@+id/webViewFragment"
-        android:name="com.example.CloudStine.WebView.WebViewFragment"
-        android:label="WebViewFragment" />
+        android:name="com.example.cloudstine.WebView.WebViewFragment"
+        android:label="WebViewFragment" >
+        <action
+            android:id="@+id/action_webViewFragment_to_mainFragment"
+            app:destination="@id/mainFragment"
+            app:popUpTo="@id/nav_graph" />
+    </fragment>
 
 </navigation>

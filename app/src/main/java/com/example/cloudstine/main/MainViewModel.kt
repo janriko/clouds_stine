@@ -1,17 +1,20 @@
-package com.example.CloudStine.main
+package com.example.cloudstine.main
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.CloudStine.repositories.CloudRepository
+import com.example.cloudstine.repositories.CloudRepository
 import kotlinx.coroutines.launch
 
 class MainViewModel : ViewModel() {
 
-    private val START_OPACITY = "Bewölkung"
-    private val START_HEIGHT = "Wolkenhöhe"
-    private val START_VISIBILITY = "Sichtweite"
+    companion object {
+        private const val START_OPACITY = "Bewölkung"
+        private const val START_HEIGHT = "Wolkenhöhe"
+        private const val START_VISIBILITY = "Sichtweite"
+    }
 
     private val _cloudOpacity = MutableLiveData<String>()
     val cloudOpacity: LiveData<String> = _cloudOpacity
@@ -28,19 +31,18 @@ class MainViewModel : ViewModel() {
     private val cloudRepository = CloudRepository()
 
 
-    fun getData(useHamburg: Boolean) {
+    fun getData(locationId: Int, useHamburg: Boolean = false ) {
         viewModelScope.launch {
             try {
-
                 val allData = if (useHamburg) {
-                    cloudRepository.getData().body()!!.string()
+                    cloudRepository.getData("178556").body()!!.string()
                 } else {
-                    cloudRepository.getData().body()!!.string()
+                    cloudRepository.getData(locationId.toString()).body()!!.string()
                 }
 
-                val opacityIndex = allData.indexOf(START_OPACITY) + 30
-                val heightIndex = allData.indexOf(START_HEIGHT) + 32
-                val visibilityIndex = allData.indexOf(START_VISIBILITY) + 31
+                val opacityIndex = allData.indexOf(START_OPACITY, ignoreCase = true) + 30
+                val heightIndex = allData.indexOf(START_HEIGHT, ignoreCase = true) + 32
+                val visibilityIndex = allData.indexOf(START_VISIBILITY, ignoreCase = true) + 31
 
                 val opacityEndIndex = allData.indexOf("<", opacityIndex)
                 val heightEndIndex = allData.indexOf("<", heightIndex)
@@ -49,6 +51,10 @@ class MainViewModel : ViewModel() {
                 val cutOpacityData = allData.substring(opacityIndex, opacityEndIndex)
                 val cutHeightData = allData.substring(heightIndex, heightEndIndex)
                 val cutVisibilityData = allData.substring(visibilityIndex, visibilityEndIndex)
+
+                Log.i("jan", opacityIndex.toString())
+                Log.i("jan", opacityEndIndex.toString())
+                Log.i("jan", cutOpacityData)
 
                 _cloudOpacity.value = cutOpacityData
                 _cloudHeight.value = cutHeightData

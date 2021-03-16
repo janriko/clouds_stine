@@ -1,4 +1,4 @@
-package com.example.CloudStine.main
+package com.example.cloudstine.main
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,8 +7,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
-import com.example.CloudStine.R
-import com.example.CloudStine.databinding.MainFragmentBinding
+import androidx.navigation.fragment.navArgs
+import com.example.cloudstine.R
+import com.example.cloudstine.databinding.MainFragmentBinding
+import kotlinx.android.synthetic.main.main_fragment.*
 import java.lang.StringBuilder
 import kotlin.math.roundToInt
 
@@ -22,6 +24,8 @@ class MainFragment : Fragment(R.layout.main_fragment) {
 
     private lateinit var mainViewModel: MainViewModel
     private lateinit var mainViewModelFactory: MainViewModelFactory
+
+    val args: MainFragmentArgs by navArgs()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = MainFragmentBinding.inflate(inflater, container, false)
@@ -38,7 +42,15 @@ class MainFragment : Fragment(R.layout.main_fragment) {
 
             setObservers()
             setListener()
-            mainViewModel.getData(useHamburg)
+            mainViewModel.getData(173609, false)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val tempString = args.currentLocationId.toString() + args.currentLocationName
+        if (args.currentLocationId != 0) {
+            mainViewModel.getData(args.currentLocationId, false)
         }
     }
 
@@ -77,20 +89,26 @@ class MainFragment : Fragment(R.layout.main_fragment) {
 
     private fun showStatus(message: String) {
         binding.swiperefreshMain.isRefreshing = false
-        binding.tempData.text = message
+        //binding.tempData.text = message
         //Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
     }
 
     private fun setListener() {
         binding.swiperefreshMain.setOnRefreshListener {
-            showSnackBar = true
-            mainViewModel.getData(useHamburg)
+            if (args.currentLocationId != 0) {
+                showSnackBar = true
+                mainViewModel.getData(args.currentLocationId, useHamburg)
+            } else binding.swiperefreshMain.isRefreshing = false
+
         }
         binding.switchPosition.setOnCheckedChangeListener { view, isChecked ->
             useHamburg = !isChecked
+            binding.tempData.append(useHamburg.toString())
+            //TODO: update Data
             //binding.root.setBackgroundColor(Color.LTGRAY)
         }
         binding.cloudOpacityData.setOnClickListener {
+            //TODO: don't show Webview
             findNavController().navigate(MainFragmentDirections.actionMainFragmentToWebViewFragment())
         }
     }
@@ -100,4 +118,3 @@ class MainFragment : Fragment(R.layout.main_fragment) {
         _binding = null
     }
 }
-
