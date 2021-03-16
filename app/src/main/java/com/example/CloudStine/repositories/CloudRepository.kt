@@ -11,15 +11,6 @@ class CloudRepository {
     private val retrofit = Retrofit.Builder()
         .baseUrl(BASE_URL)
         .build()
-        //.addConverterFactory(GsonConverterFactory.create())
-        /*.client(
-            OkHttpClient()
-                .newBuilder()
-                .addInterceptor(HttpLoggingInterceptor().apply {
-                    level = HttpLoggingInterceptor.Level.BODY
-                })
-                .build()
-        ) */
 
     private val retrofitService: UserApiService by lazy { retrofit.create(UserApiService::class.java) }
 

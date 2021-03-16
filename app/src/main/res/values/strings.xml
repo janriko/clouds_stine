@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Clouds (Stine)</string>
+    <string name="app_name">Clouds</string>
     <string name="main_fragment_label">@string/app_name</string>
     <string name="detail_fragment_label">Detail Fragment</string>
     <string name="listTitle">Itemtitle</string>
@@ -19,4 +19,5 @@
     <string name="no_data">-</string>
     <string name="cloud_height_feet_label">in feet:</string>
     <string name="cloud_opacity_label">Bewölkung:</string>
+    <string name="hamburg_aktuelle_position_switch">Hamburg - Aktuelle Position</string>
 </resources>

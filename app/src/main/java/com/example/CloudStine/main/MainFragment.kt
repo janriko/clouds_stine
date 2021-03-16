@@ -1,25 +1,21 @@
 package com.example.CloudStine.main
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.location.Location
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.example.CloudStine.R
 import com.example.CloudStine.databinding.MainFragmentBinding
-import com.google.android.material.snackbar.Snackbar
 import java.lang.StringBuilder
 import kotlin.math.roundToInt
 
 class MainFragment : Fragment(R.layout.main_fragment) {
 
     private var showSnackBar = false
+    private var useHamburg = false
 
     private var _binding: MainFragmentBinding? = null
     private val binding get() = _binding!!
@@ -42,7 +38,7 @@ class MainFragment : Fragment(R.layout.main_fragment) {
 
             setObservers()
             setListener()
-            mainViewModel.getData()
+            mainViewModel.getData(useHamburg)
         }
     }
 
@@ -65,20 +61,37 @@ class MainFragment : Fragment(R.layout.main_fragment) {
         val heightInFeet = floatHeight * 3.2808f
         val roundedHeight = heightInFeet.roundToInt()
         val feetString = roundedHeight.toString()
-        val stringWithDot = StringBuilder(feetString).insert(feetString.length - 3, ".")
+        val stringWithDot = when (feetString.length) {
+            in 7..9 -> {
+                StringBuilder(
+                    StringBuilder(feetString).insert(feetString.length - 3, ".")
+                ).insert(feetString.length - 6, ".")
+            }
+            in 4..6 -> StringBuilder(feetString).insert(feetString.length - 3, ".")
+            else -> feetString
+
+        }
         val stringWithFt = StringBuilder(stringWithDot).append(" ft")
         return stringWithFt.toString()
     }
 
     private fun showStatus(message: String) {
         binding.swiperefreshMain.isRefreshing = false
-        Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+        binding.tempData.text = message
+        //Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
     }
 
     private fun setListener() {
         binding.swiperefreshMain.setOnRefreshListener {
             showSnackBar = true
-            mainViewModel.getData()
+            mainViewModel.getData(useHamburg)
+        }
+        binding.switchPosition.setOnCheckedChangeListener { view, isChecked ->
+            useHamburg = !isChecked
+            //binding.root.setBackgroundColor(Color.LTGRAY)
+        }
+        binding.cloudOpacityData.setOnClickListener {
+            findNavController().navigate(MainFragmentDirections.actionMainFragmentToWebViewFragment())
         }
     }
 

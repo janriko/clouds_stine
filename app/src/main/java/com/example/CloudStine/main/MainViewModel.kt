@@ -28,10 +28,15 @@ class MainViewModel : ViewModel() {
     private val cloudRepository = CloudRepository()
 
 
-    fun getData() {
+    fun getData(useHamburg: Boolean) {
         viewModelScope.launch {
             try {
-                val allData = cloudRepository.getData().body()!!.string()
+
+                val allData = if (useHamburg) {
+                    cloudRepository.getData().body()!!.string()
+                } else {
+                    cloudRepository.getData().body()!!.string()
+                }
 
                 val opacityIndex = allData.indexOf(START_OPACITY) + 30
                 val heightIndex = allData.indexOf(START_HEIGHT) + 32
