@@ -61,7 +61,7 @@ class MainViewModel : ViewModel() {
                 _cloudVisibility.value = cutVisibilityData
                 _status.value = "Data was retrieved"
             } catch (exception: Exception) {
-                _status.value = exception.message
+                _status.value = exception.message?:"error"
             }
         }
     }

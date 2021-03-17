@@ -11,7 +11,7 @@ interface UserApiService {
         const val BASE_URL = "https://14-tage-wettervorhersage.de"
     }
 
-    @GET("/wetter/hamburg/aktuell/{locationId}/")
+    @GET("/wetter/aktuell/{locationId}/")
     suspend fun getData(@Path("locationId") locationId: String): Response<ResponseBody>
 
 }
