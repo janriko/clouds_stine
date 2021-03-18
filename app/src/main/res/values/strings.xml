@@ -19,6 +19,8 @@
     <string name="no_data">-</string>
     <string name="cloud_height_feet_label">in feet:</string>
     <string name="cloud_opacity_label">Bewölkung:</string>
-    <string name="standar_location_switch">-</string>
+    <string name="standar_location_switch">Hamburg</string>
     <string name="aktuelle_pos_switch">Aktuelle Position</string>
+    <string name="saving_info">Wenn du lange auf die linke Seite des Schalters drückst, dann wird die aktuelle Wetterstation als neues Zuahuse gespeichert</string>
+    <string name="home">Zuhause:</string>
 </resources>

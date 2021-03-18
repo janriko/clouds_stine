@@ -15,6 +15,8 @@ import kotlinx.coroutines.launch
 class MainViewModel(activity: Activity) : ViewModel() {
 
     companion object {
+        const val SHOW_INFO = "showInfo"
+
         const val USE_HAMBURG = "useHamburg"
         const val STANDARD_ID = "standardId"
         const val STANDARD_NAME = "standardName"
