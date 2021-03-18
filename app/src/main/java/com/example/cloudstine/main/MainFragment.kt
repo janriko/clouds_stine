@@ -11,7 +11,7 @@ import android.webkit.GeolocationPermissions
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.AdapterView
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.cloudstine.R
@@ -19,6 +19,7 @@ import com.example.cloudstine.api.UserApiService
 import com.example.cloudstine.databinding.MainFragmentBinding
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.main_activity.*
+import kotlinx.android.synthetic.main.main_fragment.*
 import java.lang.StringBuilder
 import java.util.*
 import kotlin.math.roundToInt
@@ -37,7 +38,8 @@ class MainFragment : Fragment(R.layout.main_fragment) {
         _binding = MainFragmentBinding.inflate(inflater, container, false)
         sharedPref = requireActivity().getSharedPreferences("main", 0)
         binding.switchPosition.isChecked = !sharedPref.getBoolean(MainViewModel.USE_HAMBURG, true)
-        binding.storredLocationText.text = sharedPref.getString(MainViewModel.STANDARD_NAME, "-")
+        binding.homeLocationText.text = sharedPref.getString(MainViewModel.STANDARD_NAME, "-")
+        binding.infoGroup.isVisible = sharedPref.getBoolean(MainViewModel.SHOW_INFO, true)
         return binding.root
     }
 
@@ -99,24 +101,26 @@ class MainFragment : Fragment(R.layout.main_fragment) {
     private fun setListener() {
         binding.swiperefreshMain.setOnRefreshListener { getDataFromLocation() }
         binding.switchPosition.setOnCheckedChangeListener { _, isChecked ->
-            sharedPref.edit().let {
-                it.putBoolean(MainViewModel.USE_HAMBURG, !isChecked)
-                it.apply()
-            }
+            sharedPref.edit().putBoolean(MainViewModel.USE_HAMBURG, !isChecked).apply()
             getDataFromLocation()
             //binding.root.setBackgroundColor(Color.LTGRAY)
         }
         binding.cloudOpacityData.setOnClickListener {
-            Snackbar.make(binding.cloudVisibilityData, "VFD", 2000).let {
+            Snackbar.make(binding.cloudVisibilityData, "Markus ist cool", 200).let {
                 it.setTextColor(Color.LTGRAY)
                 it.setBackgroundTint(Color.WHITE)
                 it.show()
             }
         }
-        binding.storredLocationText.setOnLongClickListener {
-            if (binding.switchPosition.isChecked) mainViewModel.storeNewStandardValues()
-            else Snackbar.make(binding.root, "Position bereits gespeichert", Snackbar.LENGTH_SHORT).show()
-            binding.storredLocationText.text = mainViewModel.locationName.value?.capitalize(Locale.GERMANY)
+        binding.homeLayout.setOnLongClickListener {
+            if (!swiperefreshMain.isRefreshing) {
+                if (binding.switchPosition.isChecked && sharedPref.getString(MainViewModel.STANDARD_NAME, "null") != mainViewModel.locationName.value) {
+                    mainViewModel.storeNewStandardValues()
+                    binding.homeLocationText.text = mainViewModel.locationName.value?.capitalize(Locale.GERMANY)
+                    binding.infoGroup.isVisible = false
+                    sharedPref.edit().putBoolean(MainViewModel.SHOW_INFO, false).apply()
+                } else Snackbar.make(binding.root, "Position bereits gespeichert", Snackbar.LENGTH_SHORT).show()
+            }
             return@setOnLongClickListener true
         }
     }

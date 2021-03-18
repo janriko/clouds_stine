@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_fragment"
     android:layout_width="match_parent"
@@ -130,27 +131,42 @@
                 android:paddingHorizontal="@dimen/two_grid_unit"
                 android:weightSum="3">
 
-                <TextView
-                    android:id="@+id/storred_location_text"
+                <RelativeLayout
+                    android:id="@+id/home_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/standar_location_switch"
                     android:layout_gravity="center_vertical"
-                    android:textSize="16sp"
-                    android:longClickable="true"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1"
+                    android:longClickable="true">
+
+                    <TextView
+                        android:id="@+id/home_location_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/home"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/home_location_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/home_location_title"
+                        android:layout_marginTop="@dimen/one_grid_unit"
+                        android:text="@string/standar_location_switch"
+                        android:textSize="16sp" />
+                </RelativeLayout>
 
                 <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content">
-
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/switch_position"
-                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_centerInParent="true"
-                    android:layout_margin="@dimen/one_grid_unit"/>
+                    android:layout_weight="1">
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switch_position"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerInParent="true"
+                        android:layout_margin="@dimen/one_grid_unit" />
                 </RelativeLayout>
 
                 <TextView
@@ -170,6 +186,28 @@
                 android:layout_height="2dp"
                 android:background="?android:attr/listDivider" />
 
+            <LinearLayout
+                android:id="@+id/info_group"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/saving_info"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="@dimen/two_grid_unit"
+                    android:layout_marginVertical="@dimen/one_grid_unit"
+                    android:text="@string/saving_info"
+                    android:textSize="12sp" />
+
+                <View
+                    android:id="@+id/info_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="2dp"
+                    android:background="?android:attr/listDivider" />
+            </LinearLayout>
+
             <TextView
                 android:id="@+id/tempData"
                 android:layout_width="match_parent"
@@ -179,7 +217,7 @@
                 android:id="@+id/webview"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                android:visibility="gone"/>
+                android:visibility="gone" />
         </LinearLayout>
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
