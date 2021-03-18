@@ -1,5 +1,6 @@
 package com.example.cloudstine.main
 
+import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -10,25 +11,21 @@ import android.webkit.GeolocationPermissions
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.AdapterView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import com.example.cloudstine.R
-import com.example.cloudstine.WebView.WebViewFragmentDirections
 import com.example.cloudstine.api.UserApiService
 import com.example.cloudstine.databinding.MainFragmentBinding
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.main_fragment.*
+import kotlinx.android.synthetic.main.main_activity.*
 import java.lang.StringBuilder
+import java.util.*
 import kotlin.math.roundToInt
 
 class MainFragment : Fragment(R.layout.main_fragment) {
 
-    var locationId: Int = 173609
-    var locationName: String = "HH"
-
-    private var useHamburg = false
+    private lateinit var sharedPref: SharedPreferences
 
     private var _binding: MainFragmentBinding? = null
     private val binding get() = _binding!!
@@ -36,34 +33,25 @@ class MainFragment : Fragment(R.layout.main_fragment) {
     private lateinit var mainViewModel: MainViewModel
     private lateinit var mainViewModelFactory: MainViewModelFactory
 
-    val args: MainFragmentArgs by navArgs()
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = MainFragmentBinding.inflate(inflater, container, false)
+        sharedPref = requireActivity().getSharedPreferences("main", 0)
+        binding.switchPosition.isChecked = !sharedPref.getBoolean(MainViewModel.USE_HAMBURG, true)
+        binding.storredLocationText.text = sharedPref.getString(MainViewModel.STANDARD_NAME, "-")
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if (savedInstanceState == null) {
-            mainViewModelFactory = MainViewModelFactory()
+            mainViewModelFactory = MainViewModelFactory(requireActivity())
             mainViewModel = ViewModelProvider(this, mainViewModelFactory).get(MainViewModel::class.java)
 
             setObservers()
             setListener()
             setupWebView()
-
-            getDataFromLocation()
-            //mainViewModel.getData(locationId, true)
         }
     }
-
-    /* override fun onResume() {
-         super.onResume()
-         if (args.currentLocationId != 0) {
-             mainViewModel.getData(args.currentLocationId, false)
-         }
-     } */
 
     private fun setObservers() {
         mainViewModel.status.observe(viewLifecycleOwner) { message -> showStatus(message) }
@@ -73,6 +61,10 @@ class MainFragment : Fragment(R.layout.main_fragment) {
         mainViewModel.cloudHeight.observe(viewLifecycleOwner) { height ->
             binding.cloudHeightDataMeter.text = height
             binding.cloudHeightDataFeet.text = convertHeight(height)
+        }
+
+        mainViewModel.locationName.observe(viewLifecycleOwner) { name ->
+            requireActivity().toolbar.title = "Wetterstation: " + name.capitalize(Locale.GERMANY)
         }
     }
 
@@ -100,33 +92,49 @@ class MainFragment : Fragment(R.layout.main_fragment) {
 
     private fun showStatus(message: String) {
         binding.swiperefreshMain.isRefreshing = false
-        binding.tempData.text = message
-        //Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+        binding.swiperefreshMain.setColorSchemeColors(Color.BLACK)
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
     }
 
     private fun setListener() {
         binding.swiperefreshMain.setOnRefreshListener { getDataFromLocation() }
-        binding.switchPosition.setOnCheckedChangeListener { view, isChecked ->
-            useHamburg = !isChecked
+        binding.switchPosition.setOnCheckedChangeListener { _, isChecked ->
+            sharedPref.edit().let {
+                it.putBoolean(MainViewModel.USE_HAMBURG, !isChecked)
+                it.apply()
+            }
             getDataFromLocation()
             //binding.root.setBackgroundColor(Color.LTGRAY)
         }
         binding.cloudOpacityData.setOnClickListener {
-            val sb = Snackbar.make(binding.cloudVisibilityData, "VFD", 200)
-            sb.setTextColor(Color.RED)
-            sb.setBackgroundTint(Color.GRAY)
-            sb.show()
+            Snackbar.make(binding.cloudVisibilityData, "VFD", 2000).let {
+                it.setTextColor(Color.LTGRAY)
+                it.setBackgroundTint(Color.WHITE)
+                it.show()
+            }
+        }
+        binding.storredLocationText.setOnLongClickListener {
+            if (binding.switchPosition.isChecked) mainViewModel.storeNewStandardValues()
+            else Snackbar.make(binding.root, "Position bereits gespeichert", Snackbar.LENGTH_SHORT).show()
+            binding.storredLocationText.text = mainViewModel.locationName.value?.capitalize(Locale.GERMANY)
+            return@setOnLongClickListener true
         }
     }
 
+
     private fun getDataFromLocation() {
-        //TODO: load baseUrl on start and after that only jscript to increase performance
-        binding.swiperefreshMain.isRefreshing = true
-        binding.webview.loadUrl(UserApiService.BASE_URL)
+        binding.swiperefreshMain.let {
+            it.setColorSchemeColors(Color.RED)
+            it.isRefreshing = true
+        }
+        binding.webview.loadUrl("javascript:getLocation();")
     }
 
-    //TODO: do in ViewModel
     private fun setupWebView() {
+        binding.swiperefreshMain.let {
+            it.setColorSchemeColors(Color.YELLOW)
+            it.isRefreshing = true
+        }
         binding.webview.let {
             it.settings.javaScriptEnabled = true
             it.webChromeClient = object : WebChromeClient() {
@@ -141,29 +149,26 @@ class MainFragment : Fragment(R.layout.main_fragment) {
                 }
 
                 override fun onPageFinished(view: WebView?, url: String) {
-                    if (url == ("https://14-tage-wettervorhersage.de/")) {
-                        Log.i("jan", url)
-                        binding.swiperefreshMain.setColorSchemeColors(Color.RED)
-                        it.loadUrl("javascript:getLocation();")
-                    } else if (url.substring(30).contains("vorhersage")) {
-                        val subUrl = url.substring(30)
-                        locationId = subUrl.substring(subUrl.indexOf("vorhersage") + 11, subUrl.length - 1).toInt()
-                        locationName = subUrl.substring(subUrl.indexOf("wetter") + 7, subUrl.indexOf("vorhersage") - 1)
-                        Log.i("jan", locationId.toString())
-                        Log.i("jan", locationName)
-
-                        binding.swiperefreshMain.setColorSchemeColors(Color.BLUE)
-                        mainViewModel.getData(locationId, useHamburg)
-                    } else {
-                        binding.swiperefreshMain.isRefreshing = false
-                        Snackbar.make(binding.root, "getLocation() failed \n GPS turned on?", Snackbar.LENGTH_SHORT).show()
-                    }
                     super.onPageFinished(view, url)
+                    when {
+                        url == ("https://14-tage-wettervorhersage.de/") -> getDataFromLocation()
+                        url.substring(30).contains("vorhersage") -> {
+                            val subUrl = url.substring(30)
+                            val locationId = subUrl.substring(subUrl.indexOf("vorhersage") + 11, subUrl.length - 1).toInt()
+                            val locationName = subUrl.substring(subUrl.indexOf("wetter") + 7, subUrl.indexOf("vorhersage") - 1)
+                            mainViewModel.storeValues(locationId, locationName)
+
+                            Log.i("jan", subUrl)
+                            binding.swiperefreshMain.setColorSchemeColors(Color.BLUE)
+                            mainViewModel.getData()
+                        }
+                        else -> showStatus("getLocation() failed \n GPS turned on?")
+                    }
                 }
             }
+            it.loadUrl(UserApiService.BASE_URL)
         }
     }
-
 
     override fun onDestroyView() {
         super.onDestroyView()

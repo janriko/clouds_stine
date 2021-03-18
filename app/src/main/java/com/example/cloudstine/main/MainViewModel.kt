@@ -1,20 +1,29 @@
 package com.example.cloudstine.main
 
+import android.app.Activity
+import android.content.SharedPreferences
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.cloudstine.MainActivity
+import com.example.cloudstine.R
 import com.example.cloudstine.repositories.CloudRepository
 import kotlinx.coroutines.launch
 
-class MainViewModel : ViewModel() {
+class MainViewModel(activity: Activity) : ViewModel() {
 
     companion object {
+        const val USE_HAMBURG = "useHamburg"
+        const val STANDARD_ID = "standardId"
+        const val STANDARD_NAME = "standardName"
+
         private const val START_OPACITY = "Bewölkung"
         private const val START_HEIGHT = "Wolkenhöhe"
         private const val START_VISIBILITY = "Sichtweite"
     }
+    private val sharedPreferences: SharedPreferences = activity.getSharedPreferences("main", 0)
 
     private val _cloudOpacity = MutableLiveData<String>()
     val cloudOpacity: LiveData<String> = _cloudOpacity
@@ -28,41 +37,52 @@ class MainViewModel : ViewModel() {
     private val _status = MutableLiveData<String>()
     val status: LiveData<String> = _status
 
+    private val _locationId = MutableLiveData<Int>()
+
+    private val _locationName = MutableLiveData<String>()
+    val locationName: LiveData<String> = _locationName
+
     private val cloudRepository = CloudRepository()
 
 
-    fun getData(locationId: Int, useHamburg: Boolean = false ) {
+    fun getData() {
         viewModelScope.launch {
             try {
-                val allData = if (useHamburg) {
-                    cloudRepository.getData("178556").body()!!.string()
-                } else {
-                    cloudRepository.getData(locationId.toString()).body()!!.string()
+                var useId = _locationId.value
+                if (sharedPreferences.getBoolean(USE_HAMBURG,true)){
+                    useId = sharedPreferences.getInt(STANDARD_ID, 178556)
+                    _locationName.value = sharedPreferences.getString(STANDARD_NAME, "Hamburg")
                 }
 
-                val opacityIndex = allData.indexOf(START_OPACITY, ignoreCase = true) + 30
-                val heightIndex = allData.indexOf(START_HEIGHT, ignoreCase = true) + 32
-                val visibilityIndex = allData.indexOf(START_VISIBILITY, ignoreCase = true) + 31
+                val allData = cloudRepository.getData( useId.toString()).body()!!.string()
 
-                val opacityEndIndex = allData.indexOf("<", opacityIndex)
-                val heightEndIndex = allData.indexOf("<", heightIndex)
-                val visibilityEndIndex = allData.indexOf("<", visibilityIndex)
-
-                val cutOpacityData = allData.substring(opacityIndex, opacityEndIndex)
-                val cutHeightData = allData.substring(heightIndex, heightEndIndex)
-                val cutVisibilityData = allData.substring(visibilityIndex, visibilityEndIndex)
-
-                Log.i("jan", opacityIndex.toString())
-                Log.i("jan", opacityEndIndex.toString())
-                Log.i("jan", cutOpacityData)
-
-                _cloudOpacity.value = cutOpacityData
-                _cloudHeight.value = cutHeightData
-                _cloudVisibility.value = cutVisibilityData
+                _cloudOpacity.value = getCutData(allData, START_OPACITY, 30)
+                _cloudHeight.value = getCutData(allData, START_HEIGHT, 32)
+                _cloudVisibility.value = getCutData(allData, START_VISIBILITY, 31)
                 _status.value = "Data was retrieved"
             } catch (exception: Exception) {
                 _status.value = exception.message?:"error"
             }
         }
+    }
+
+    fun getCutData(allData: String, startString: String, offset: Int): String{
+        val startIndex = allData.indexOf(startString, ignoreCase = true) + offset
+        val endIndex = allData.indexOf("<", startIndex)
+        return allData.substring(startIndex, endIndex)
+    }
+
+    fun storeValues(id: Int, name: String) {
+        _locationId.value = id
+        _locationName.value = name
+    }
+
+    fun storeNewStandardValues() {
+        sharedPreferences.edit().let {
+            it.putInt(STANDARD_ID, _locationId.value?:178556)
+            it.putString(STANDARD_NAME, _locationName.value?:"Hamburg")
+            it.apply()
+        }
+
     }
 }

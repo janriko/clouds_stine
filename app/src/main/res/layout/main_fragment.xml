@@ -131,19 +131,27 @@
                 android:weightSum="3">
 
                 <TextView
+                    android:id="@+id/storred_location_text"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/hamburg_switch"
+                    android:text="@string/standar_location_switch"
                     android:layout_gravity="center_vertical"
                     android:textSize="16sp"
+                    android:longClickable="true"
                     android:layout_weight="1"/>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content">
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
                     android:id="@+id/switch_position"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_margin="@dimen/one_grid_unit"
-                    android:layout_weight="1"/>
+                    android:layout_centerInParent="true"
+                    android:layout_margin="@dimen/one_grid_unit"/>
+                </RelativeLayout>
 
                 <TextView
                     android:layout_width="match_parent"
@@ -170,7 +178,8 @@
             <WebView
                 android:id="@+id/webview"
                 android:layout_width="0dp"
-                android:layout_height="0dp"/>
+                android:layout_height="0dp"
+                android:visibility="gone"/>
         </LinearLayout>
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

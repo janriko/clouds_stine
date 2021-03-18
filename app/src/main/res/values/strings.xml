@@ -19,6 +19,6 @@
     <string name="no_data">-</string>
     <string name="cloud_height_feet_label">in feet:</string>
     <string name="cloud_opacity_label">Bewölkung:</string>
-    <string name="hamburg_switch">Hamburg</string>
+    <string name="standar_location_switch">-</string>
     <string name="aktuelle_pos_switch">Aktuelle Position</string>
 </resources>
