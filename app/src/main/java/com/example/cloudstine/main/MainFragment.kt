@@ -37,8 +37,8 @@ class MainFragment : Fragment(R.layout.main_fragment) {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = MainFragmentBinding.inflate(inflater, container, false)
         sharedPref = requireActivity().getSharedPreferences("main", 0)
-        binding.switchPosition.isChecked = !sharedPref.getBoolean(MainViewModel.USE_HAMBURG, true)
-        binding.homeLocationText.text = sharedPref.getString(MainViewModel.STANDARD_NAME, "-")
+        binding.radioGroup.check( if (sharedPref.getBoolean(MainViewModel.USE_HAMBURG, true)){R.id.home_radio} else {R.id.gps_radio}) // .switchPosition.isChecked = !sharedPref.getBoolean(MainViewModel.USE_HAMBURG, true)
+        binding.homeLocationText.text = sharedPref.getString(MainViewModel.STANDARD_NAME, "-")?.capitalize(Locale.GERMANY)
         binding.infoGroup.isVisible = sharedPref.getBoolean(MainViewModel.SHOW_INFO, true)
         return binding.root
     }
@@ -100,8 +100,9 @@ class MainFragment : Fragment(R.layout.main_fragment) {
 
     private fun setListener() {
         binding.swiperefreshMain.setOnRefreshListener { getDataFromLocation() }
-        binding.switchPosition.setOnCheckedChangeListener { _, isChecked ->
-            sharedPref.edit().putBoolean(MainViewModel.USE_HAMBURG, !isChecked).apply()
+        binding.radioGroup.setOnCheckedChangeListener { _, checkedId ->
+            Log.i("jan", R.id.gps_radio.toString())
+            sharedPref.edit().putBoolean(MainViewModel.USE_HAMBURG, checkedId == R.id.home_radio).apply()
             getDataFromLocation()
             //binding.root.setBackgroundColor(Color.LTGRAY)
         }
@@ -114,7 +115,7 @@ class MainFragment : Fragment(R.layout.main_fragment) {
         }
         binding.homeLayout.setOnLongClickListener {
             if (!swiperefreshMain.isRefreshing) {
-                if (binding.switchPosition.isChecked && sharedPref.getString(MainViewModel.STANDARD_NAME, "null") != mainViewModel.locationName.value) {
+                if (binding.radioGroup.checkedRadioButtonId == R.id.gps_radio && sharedPref.getString(MainViewModel.STANDARD_NAME, "null") != mainViewModel.locationName.value) {
                     mainViewModel.storeNewStandardValues()
                     binding.homeLocationText.text = mainViewModel.locationName.value?.capitalize(Locale.GERMANY)
                     binding.infoGroup.isVisible = false

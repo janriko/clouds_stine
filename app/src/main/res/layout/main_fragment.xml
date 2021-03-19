@@ -124,62 +124,89 @@
                     android:background="?android:attr/listDivider" />
             </RelativeLayout>
 
-            <LinearLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:paddingHorizontal="@dimen/two_grid_unit"
-                android:weightSum="3">
+                android:paddingTop="@dimen/one_grid_unit"
+                android:paddingBottom="@dimen/one_grid_unit">
 
-                <RelativeLayout
+                <LinearLayout
                     android:id="@+id/home_layout"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_weight="1"
-                    android:longClickable="true">
-
-                    <TextView
-                        android:id="@+id/home_location_title"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/home"
-                        android:textSize="12sp" />
-
-                    <TextView
-                        android:id="@+id/home_location_text"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@+id/home_location_title"
-                        android:layout_marginTop="@dimen/one_grid_unit"
-                        android:text="@string/standar_location_switch"
-                        android:textSize="16sp" />
-                </RelativeLayout>
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1">
-
-                    <com.google.android.material.switchmaterial.SwitchMaterial
-                        android:id="@+id/switch_position"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_centerInParent="true"
-                        android:layout_margin="@dimen/one_grid_unit" />
-                </RelativeLayout>
+                    android:layout_marginEnd="@dimen/six_grid_unit"
+                    app:layout_constraintEnd_toStartOf="@+id/radioGroup"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="@+id/location_divider"
+                    android:orientation="vertical">
 
                 <TextView
+                    android:id="@+id/home_location_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_weight="1"
-                    android:text="@string/aktuelle_pos_switch"
-                    android:textAlignment="textEnd"
-                    android:textSize="16sp"
-                    tools:ignore="RtlCompat" />
+                    android:text="@string/home"
+                    android:textSize="12sp" />
 
-            </LinearLayout>
+                <TextView
+                    android:id="@+id/home_location_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/standar_location_switch"
+                    android:textSize="16sp"
+                    android:layout_marginEnd="@dimen/six_grid_unit" />
+                </LinearLayout>
+
+                <View
+                    android:id="@+id/location_divider"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="?android:attr/listDivider"
+                    android:layout_marginHorizontal="@dimen/four_grid_unit"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:layout_editor_absoluteX="16dp" />
+
+                <TextView
+                    android:id="@+id/gps_text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/aktuelle_pos_switch"
+                    android:textSize="16sp"
+                    android:layout_marginEnd="@dimen/six_grid_unit"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/radioGroup"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/location_divider" />
+
+                <RadioGroup
+                    android:id="@+id/radioGroup"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <com.google.android.material.radiobutton.MaterialRadioButton
+                        android:id="@+id/home_radio"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintBottom_toBottomOf="@+id/home_location_text"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <com.google.android.material.radiobutton.MaterialRadioButton
+                        android:id="@+id/gps_radio"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/two_grid_unit"
+                        app:layout_constraintBottom_toBottomOf="@+id/gps_text"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="@+id/gps_text" />
+
+                </RadioGroup>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <View
                 android:layout_width="match_parent"
