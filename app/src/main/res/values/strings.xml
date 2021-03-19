@@ -23,4 +23,6 @@
     <string name="aktuelle_pos_switch">Aktuelle Position</string>
     <string name="saving_info">Drücke lange auf Zuhause und es wird die aktuelle Wetterstation als neues Zuahuse gespeichert</string>
     <string name="home">Zuhause:</string>
+    <string name="max">(max)</string>
+    <string name="open_website">open website</string>
 </resources>

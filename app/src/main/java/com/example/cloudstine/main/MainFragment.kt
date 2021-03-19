@@ -1,7 +1,9 @@
 package com.example.cloudstine.main
 
+import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -11,6 +13,7 @@ import android.webkit.GeolocationPermissions
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.core.content.ContextCompat.getColor
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -20,9 +23,8 @@ import com.example.cloudstine.databinding.MainFragmentBinding
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.main_activity.*
 import kotlinx.android.synthetic.main.main_fragment.*
-import java.lang.StringBuilder
 import java.util.*
-import kotlin.math.roundToInt
+
 
 class MainFragment : Fragment(R.layout.main_fragment) {
 
@@ -37,8 +39,14 @@ class MainFragment : Fragment(R.layout.main_fragment) {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = MainFragmentBinding.inflate(inflater, container, false)
         sharedPref = requireActivity().getSharedPreferences("main", 0)
-        binding.radioGroup.check( if (sharedPref.getBoolean(MainViewModel.USE_HAMBURG, true)){R.id.home_radio} else {R.id.gps_radio}) // .switchPosition.isChecked = !sharedPref.getBoolean(MainViewModel.USE_HAMBURG, true)
-        binding.homeLocationText.text = sharedPref.getString(MainViewModel.STANDARD_NAME, "-")?.capitalize(Locale.GERMANY)
+        binding.radioGroup.check(
+            if (sharedPref.getBoolean(MainViewModel.USE_HAMBURG, true)) {
+                R.id.home_radio
+            } else {
+                R.id.gps_radio
+            }
+        )
+        binding.homeLocationText.text = sharedPref.getString(MainViewModel.STANDARD_NAME, "Hamburg")?.capitalize(Locale.GERMANY)
         binding.infoGroup.isVisible = sharedPref.getBoolean(MainViewModel.SHOW_INFO, true)
         return binding.root
     }
@@ -60,42 +68,19 @@ class MainFragment : Fragment(R.layout.main_fragment) {
 
         mainViewModel.cloudOpacity.observe(viewLifecycleOwner) { opacity -> binding.cloudOpacityData.text = opacity }
         mainViewModel.cloudVisibility.observe(viewLifecycleOwner) { visibility -> binding.cloudVisibilityData.text = visibility }
-        mainViewModel.cloudHeight.observe(viewLifecycleOwner) { height ->
-            binding.cloudHeightDataMeter.text = height
-            binding.cloudHeightDataFeet.text = convertHeight(height)
-        }
+        mainViewModel.cloudHeightMeter.observe(viewLifecycleOwner) { heightMeter -> binding.cloudHeightDataMeter.text = heightMeter }
+        mainViewModel.cloudHeightFeet.observe(viewLifecycleOwner) { heightFeet -> binding.cloudHeightDataFeet.text = heightFeet }
+        mainViewModel.cloudHeightMax.observe(viewLifecycleOwner) { show -> binding.cloudHeightMax.isVisible = show }
 
-        mainViewModel.locationName.observe(viewLifecycleOwner) { name ->
-            requireActivity().toolbar.title = "Wetterstation: " + name.capitalize(Locale.GERMANY)
-        }
-    }
-
-    private fun convertHeight(height: String): String {
-        val noMHeight = (height.substring(0, height.indexOf("m") - 1))
-        val germanWithoutFirst = noMHeight.replace(".", "")
-        val englishComma = germanWithoutFirst.replace(",", ".")
-        val floatHeight = englishComma.toFloat()
-        val heightInFeet = floatHeight * 3.2808f
-        val roundedHeight = heightInFeet.roundToInt()
-        val feetString = roundedHeight.toString()
-        val stringWithDot = when (feetString.length) {
-            in 7..9 -> {
-                StringBuilder(
-                    StringBuilder(feetString).insert(feetString.length - 3, ".")
-                ).insert(feetString.length - 6, ".")
-            }
-            in 4..6 -> StringBuilder(feetString).insert(feetString.length - 3, ".")
-            else -> feetString
-
-        }
-        val stringWithFt = StringBuilder(stringWithDot).append(" ft")
-        return stringWithFt.toString()
+        mainViewModel.locationName.observe(viewLifecycleOwner) { name -> requireActivity().toolbar.title = "Wetterstation: " + name.capitalize(Locale.GERMANY) }
     }
 
     private fun showStatus(message: String) {
-        binding.swiperefreshMain.isRefreshing = false
-        binding.swiperefreshMain.setColorSchemeColors(Color.BLACK)
-        Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+        binding.swiperefreshMain.let {
+            it.isRefreshing = false
+            it.setColorSchemeColors(Color.RED)
+        }
+        if (message != "success") Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
     }
 
     private fun setListener() {
@@ -124,12 +109,14 @@ class MainFragment : Fragment(R.layout.main_fragment) {
             }
             return@setOnLongClickListener true
         }
+        binding.openWebButton.setOnClickListener {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://14-tage-wettervorhersage.de/wetter/aktuell/${mainViewModel.locationId.value.toString()}/"))) }
     }
 
 
     private fun getDataFromLocation() {
         binding.swiperefreshMain.let {
-            it.setColorSchemeColors(Color.RED)
+            it.setColorSchemeColors(getColor(requireContext(), R.color.red))
             it.isRefreshing = true
         }
         binding.webview.loadUrl("javascript:getLocation();")
@@ -137,7 +124,7 @@ class MainFragment : Fragment(R.layout.main_fragment) {
 
     private fun setupWebView() {
         binding.swiperefreshMain.let {
-            it.setColorSchemeColors(Color.YELLOW)
+            it.setColorSchemeColors(getColor(requireContext(), R.color.green))
             it.isRefreshing = true
         }
         binding.webview.let {
@@ -164,7 +151,7 @@ class MainFragment : Fragment(R.layout.main_fragment) {
                             mainViewModel.storeValues(locationId, locationName)
 
                             Log.i("jan", subUrl)
-                            binding.swiperefreshMain.setColorSchemeColors(Color.BLUE)
+                            binding.swiperefreshMain.setColorSchemeColors(getColor(requireContext(), R.color.blue))
                             mainViewModel.getData()
                         }
                         else -> showStatus("getLocation() failed \n GPS turned on?")
