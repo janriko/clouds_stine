@@ -37,8 +37,30 @@ class MainFragment : Fragment(R.layout.main_fragment) {
     private lateinit var mainViewModelFactory: MainViewModelFactory
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+
+        setupBindingAndShardPref(inflater, container)
+        setUpInitialViews()
+
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        if (savedInstanceState == null) {
+            setupViewModel()
+
+            setObservers()
+            setListener()
+            setupWebView()
+        }
+    }
+
+    private fun setupBindingAndShardPref(inflater: LayoutInflater, container: ViewGroup?) {
         _binding = MainFragmentBinding.inflate(inflater, container, false)
         sharedPref = requireActivity().getSharedPreferences("main", 0)
+    }
+
+    private fun setUpInitialViews() {
         binding.radioGroup.check(
             if (sharedPref.getBoolean(MainViewModel.USE_HAMBURG, true)) {
                 R.id.home_radio
@@ -48,19 +70,11 @@ class MainFragment : Fragment(R.layout.main_fragment) {
         )
         binding.homeLocationText.text = sharedPref.getString(MainViewModel.STANDARD_NAME, "Hamburg")?.capitalize(Locale.GERMANY)
         binding.infoGroup.isVisible = sharedPref.getBoolean(MainViewModel.SHOW_INFO, true)
-        return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        if (savedInstanceState == null) {
-            mainViewModelFactory = MainViewModelFactory(requireActivity())
-            mainViewModel = ViewModelProvider(this, mainViewModelFactory).get(MainViewModel::class.java)
-
-            setObservers()
-            setListener()
-            setupWebView()
-        }
+    private fun setupViewModel() {
+        mainViewModelFactory = MainViewModelFactory(requireActivity())
+        mainViewModel = ViewModelProvider(this, mainViewModelFactory).get(MainViewModel::class.java)
     }
 
     private fun setObservers() {
@@ -73,14 +87,6 @@ class MainFragment : Fragment(R.layout.main_fragment) {
         mainViewModel.cloudHeightMax.observe(viewLifecycleOwner) { show -> binding.cloudHeightMax.isVisible = show }
 
         mainViewModel.locationName.observe(viewLifecycleOwner) { name -> requireActivity().toolbar.title = "Wetterstation: " + name.capitalize(Locale.GERMANY) }
-    }
-
-    private fun showStatus(message: String) {
-        binding.swiperefreshMain.let {
-            it.isRefreshing = false
-            it.setColorSchemeColors(Color.RED)
-        }
-        if (message != "success") Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
     }
 
     private fun setListener() {
@@ -111,15 +117,6 @@ class MainFragment : Fragment(R.layout.main_fragment) {
         }
         binding.openWebButton.setOnClickListener {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://14-tage-wettervorhersage.de/wetter/aktuell/${mainViewModel.locationId.value.toString()}/"))) }
-    }
-
-
-    private fun getDataFromLocation() {
-        binding.swiperefreshMain.let {
-            it.setColorSchemeColors(getColor(requireContext(), R.color.red))
-            it.isRefreshing = true
-        }
-        binding.webview.loadUrl("javascript:getLocation();")
     }
 
     private fun setupWebView() {
@@ -160,6 +157,22 @@ class MainFragment : Fragment(R.layout.main_fragment) {
             }
             it.loadUrl(UserApiService.BASE_URL)
         }
+    }
+
+    private fun showStatus(message: String) {
+        binding.swiperefreshMain.let {
+            it.isRefreshing = false
+            it.setColorSchemeColors(Color.RED)
+        }
+        if (message != "success") Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+    }
+
+    private fun getDataFromLocation() {
+        binding.swiperefreshMain.let {
+            it.setColorSchemeColors(getColor(requireContext(), R.color.red))
+            it.isRefreshing = true
+        }
+        binding.webview.loadUrl("javascript:getLocation();")
     }
 
     override fun onDestroyView() {

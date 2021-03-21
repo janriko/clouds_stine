@@ -2,13 +2,10 @@ package com.example.cloudstine.main
 
 import android.app.Activity
 import android.content.SharedPreferences
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.cloudstine.MainActivity
-import com.example.cloudstine.R
 import com.example.cloudstine.repositories.CloudRepository
 import kotlinx.coroutines.launch
 import java.lang.StringBuilder
@@ -27,6 +24,7 @@ class MainViewModel(activity: Activity) : ViewModel() {
         private const val START_HEIGHT = "Wolkenhöhe"
         private const val START_VISIBILITY = "Sichtweite"
     }
+
     private val sharedPreferences: SharedPreferences = activity.getSharedPreferences("main", 0)
 
     private val _cloudOpacity = MutableLiveData<String>()
@@ -38,8 +36,8 @@ class MainViewModel(activity: Activity) : ViewModel() {
     private val _cloudHeightFeet = MutableLiveData<String>()
     val cloudHeightFeet: LiveData<String> = _cloudHeightFeet
 
-    private val _cloudHeightMax = MutableLiveData<Boolean>()
-    val cloudHeightMax: LiveData<Boolean> = _cloudHeightMax
+    private val _showCloudHeightMax = MutableLiveData<Boolean>()
+    val cloudHeightMax: LiveData<Boolean> = _showCloudHeightMax
 
     private val _cloudVisibility = MutableLiveData<String>()
     val cloudVisibility: LiveData<String> = _cloudVisibility
@@ -107,7 +105,7 @@ class MainViewModel(activity: Activity) : ViewModel() {
 
     private fun convertHeightToFeet(height: String): String {
         val  floatHeight = cutUnit(height)
-        _cloudHeightMax.value = floatHeight == 12192.0f
+        _showCloudHeightMax.value = floatHeight == 12192.0f
         val heightInFeet = floatHeight * 3.2808f
         val roundedHeight = heightInFeet.roundToInt()
         val feetString = roundedHeight.toString()
