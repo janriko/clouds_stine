@@ -5,4 +5,5 @@
     <dimen name="three_grid_unit">24dp</dimen>
     <dimen name="four_grid_unit">32dp</dimen>
     <dimen name="five_grid_unit">40dp</dimen>
+    <dimen name="six_grid_unit">48dp</dimen>
 </resources>

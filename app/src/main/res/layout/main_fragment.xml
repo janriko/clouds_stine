@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_fragment"
     android:layout_width="match_parent"
@@ -10,177 +11,270 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <LinearLayout
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:id="@+id/cloud_opacity_title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_margin="@dimen/two_grid_unit"
-                    android:layout_toStartOf="@+id/cloud_opacity_data"
-                    android:text="@string/cloud_opacity_label"
-                    android:textSize="24sp" />
-
-                <TextView
-                    android:id="@+id/cloud_opacity_data"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_margin="@dimen/two_grid_unit"
-                    android:layout_marginEnd="@dimen/two_grid_unit"
-                    android:text="@string/no_data"
-                    android:textSize="24sp"
-                    tools:text="20 %" />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="2dp"
-                    android:layout_below="@+id/cloud_opacity_title"
-                    android:background="?android:attr/listDivider" />
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:id="@+id/cloud_height_title_meter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_margin="@dimen/two_grid_unit"
-                    android:layout_marginStart="@dimen/two_grid_unit"
-                    android:layout_marginEnd="122dp"
-                    android:layout_toStartOf="@+id/cloud_height_data_feet"
-                    android:text="@string/cloud_height_meter_label"
-                    android:textSize="24sp" />
-
-                <TextView
-                    android:id="@+id/cloud_height_data_feet"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_margin="@dimen/two_grid_unit"
-                    android:text="@string/no_data"
-                    android:textSize="24sp"
-                    tools:text="1377,936 ft" />
-
-                <TextView
-                    android:id="@+id/cloud_height_data_meter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@+id/cloud_height_data_feet"
-                    android:layout_alignParentEnd="true"
-                    android:layout_marginEnd="@dimen/two_grid_unit"
-                    android:layout_marginBottom="@dimen/two_grid_unit"
-                    android:text="@string/no_data"
-                    android:textSize="14sp"
-                    tools:text="420,0 m" />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="2dp"
-                    android:layout_below="@+id/cloud_height_data_meter"
-                    android:background="?android:attr/listDivider" />
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:id="@+id/cloud_visibility_title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_margin="@dimen/two_grid_unit"
-                    android:layout_toStartOf="@+id/cloud_visibility_data"
-                    android:text="@string/cloud_visibility_label"
-                    android:textSize="24sp" />
-
-                <TextView
-                    android:id="@+id/cloud_visibility_data"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_margin="@dimen/two_grid_unit"
-                    android:text="@string/no_data"
-                    android:textSize="24sp"
-                    tools:text="10,5 km" />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="2dp"
-                    android:layout_below="@+id/cloud_visibility_title"
-                    android:background="?android:attr/listDivider" />
-            </RelativeLayout>
+            android:layout_height="wrap_content">
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingHorizontal="@dimen/two_grid_unit"
-                android:weightSum="3">
-
-                <TextView
-                    android:id="@+id/storred_location_text"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/standar_location_switch"
-                    android:layout_gravity="center_vertical"
-                    android:textSize="16sp"
-                    android:longClickable="true"
-                    android:layout_weight="1"/>
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
                 <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_weight="1"
                     android:layout_height="wrap_content">
 
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/switch_position"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerInParent="true"
-                    android:layout_margin="@dimen/one_grid_unit"/>
+                    <TextView
+                        android:id="@+id/cloud_opacity_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_margin="@dimen/two_grid_unit"
+                        android:layout_toStartOf="@+id/cloud_opacity_data"
+                        android:text="@string/cloud_opacity_label"
+                        android:textSize="24sp" />
+
+                    <TextView
+                        android:id="@+id/cloud_opacity_data"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_margin="@dimen/two_grid_unit"
+                        android:layout_marginEnd="@dimen/two_grid_unit"
+                        android:text="@string/no_data"
+                        android:textSize="24sp"
+                        tools:text="20 %" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="2dp"
+                        android:layout_below="@+id/cloud_opacity_title"
+                        android:background="?android:attr/listDivider" />
                 </RelativeLayout>
 
-                <TextView
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/cloud_height_title_meter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginStart="@dimen/two_grid_unit"
+                        android:layout_marginTop="@dimen/two_grid_unit"
+                        android:layout_marginEnd="@dimen/two_grid_unit"
+                        android:layout_marginBottom="@dimen/two_grid_unit"
+                        android:layout_toStartOf="@+id/cloud_height_max"
+                        android:text="@string/cloud_height_meter_label"
+                        android:textSize="24sp" />
+
+                    <TextView
+                        android:id="@+id/cloud_height_max"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignBottom="@+id/cloud_height_data_feet"
+                        android:layout_toStartOf="@+id/cloud_height_data_feet"
+                        android:text="@string/max"
+                        android:textSize="12sp"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/cloud_height_data_feet"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_margin="@dimen/two_grid_unit"
+                        android:text="@string/no_data"
+                        android:textSize="24sp"
+                        tools:text="1377,936 ft" />
+
+                    <TextView
+                        android:id="@+id/cloud_height_data_meter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/cloud_height_data_feet"
+                        android:layout_alignParentEnd="true"
+                        android:layout_marginEnd="@dimen/two_grid_unit"
+                        android:layout_marginBottom="@dimen/two_grid_unit"
+                        android:text="@string/no_data"
+                        android:textSize="14sp"
+                        tools:text="420,0 m" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="2dp"
+                        android:layout_below="@+id/cloud_height_data_meter"
+                        android:background="?android:attr/listDivider" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/cloud_visibility_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_margin="@dimen/two_grid_unit"
+                        android:layout_toStartOf="@+id/cloud_visibility_data"
+                        android:text="@string/cloud_visibility_label"
+                        android:textSize="24sp" />
+
+                    <TextView
+                        android:id="@+id/cloud_visibility_data"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_margin="@dimen/two_grid_unit"
+                        android:text="@string/no_data"
+                        android:textSize="24sp"
+                        tools:text="10,5 km" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="2dp"
+                        android:layout_below="@+id/cloud_visibility_title"
+                        android:background="?android:attr/listDivider" />
+                </RelativeLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_weight="1"
-                    android:text="@string/aktuelle_pos_switch"
-                    android:textAlignment="textEnd"
-                    android:textSize="16sp"
-                    tools:ignore="RtlCompat" />
+                    android:paddingHorizontal="@dimen/two_grid_unit"
+                    android:paddingTop="@dimen/one_grid_unit"
+                    android:paddingBottom="@dimen/one_grid_unit">
 
+                    <LinearLayout
+                        android:id="@+id/home_layout"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/six_grid_unit"
+                        android:orientation="vertical"
+                        app:layout_constraintBottom_toBottomOf="@+id/location_divider"
+                        app:layout_constraintEnd_toStartOf="@+id/radioGroup"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <TextView
+                            android:id="@+id/home_location_title"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/home"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/home_location_text"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="@dimen/six_grid_unit"
+                            android:text="@string/standar_location_switch"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+
+                    <View
+                        android:id="@+id/location_divider"
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginHorizontal="@dimen/four_grid_unit"
+                        android:background="?android:attr/listDivider"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:layout_editor_absoluteX="16dp" />
+
+                    <TextView
+                        android:id="@+id/gps_text"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/six_grid_unit"
+                        android:text="@string/aktuelle_pos_switch"
+                        android:textSize="16sp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/radioGroup"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/location_divider" />
+
+                    <RadioGroup
+                        android:id="@+id/radioGroup"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <com.google.android.material.radiobutton.MaterialRadioButton
+                            android:id="@+id/home_radio"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:layout_constraintBottom_toBottomOf="@+id/home_location_text"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <com.google.android.material.radiobutton.MaterialRadioButton
+                            android:id="@+id/gps_radio"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/two_grid_unit"
+                            app:layout_constraintBottom_toBottomOf="@+id/gps_text"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="@+id/gps_text" />
+
+                    </RadioGroup>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="2dp"
+                    android:background="?android:attr/listDivider" />
+
+                <LinearLayout
+                    android:id="@+id/info_group"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/saving_info"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="@dimen/two_grid_unit"
+                        android:layout_marginVertical="@dimen/one_grid_unit"
+                        android:text="@string/saving_info"
+                        android:textSize="12sp" />
+
+                    <View
+                        android:id="@+id/info_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="2dp"
+                        android:background="?android:attr/listDivider" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tempData"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="@dimen/two_grid_unit" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/open_web_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="80dp"
+                    android:layout_marginTop="@dimen/six_grid_unit"
+                    android:background="@color/black"
+                    android:text="@string/open_website"
+                    android:textSize="12sp"
+                    android:visibility="visible" />
+
+                <WebView
+                    android:id="@+id/webview"
+                    android:layout_width="match_parent"
+                    android:layout_height="400dp"
+                    android:visibility="gone" />
             </LinearLayout>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="2dp"
-                android:background="?android:attr/listDivider" />
 
-            <TextView
-                android:id="@+id/tempData"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <WebView
-                android:id="@+id/webview"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:visibility="gone"/>
-        </LinearLayout>
-
+        </androidx.core.widget.NestedScrollView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
