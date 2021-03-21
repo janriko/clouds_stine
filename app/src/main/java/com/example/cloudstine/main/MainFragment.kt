@@ -2,6 +2,7 @@ package com.example.cloudstine.main
 
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
@@ -13,6 +14,7 @@ import android.webkit.GeolocationPermissions
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.core.content.ContextCompat.getColor
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -24,9 +26,12 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.main_activity.*
 import kotlinx.android.synthetic.main.main_fragment.*
 import java.util.*
+import java.util.jar.Manifest
 
 
 class MainFragment : Fragment(R.layout.main_fragment) {
+
+    private val REQUEST_LOCATION = 1
 
     private lateinit var sharedPref: SharedPreferences
 
@@ -35,6 +40,8 @@ class MainFragment : Fragment(R.layout.main_fragment) {
 
     private lateinit var mainViewModel: MainViewModel
     private lateinit var mainViewModelFactory: MainViewModelFactory
+
+    private var isThisInternal = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
 
@@ -46,13 +53,11 @@ class MainFragment : Fragment(R.layout.main_fragment) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        if (savedInstanceState == null) {
             setupViewModel()
 
             setObservers()
             setListener()
             setupWebView()
-        }
     }
 
     private fun setupBindingAndShardPref(inflater: LayoutInflater, container: ViewGroup?) {
@@ -61,6 +66,7 @@ class MainFragment : Fragment(R.layout.main_fragment) {
     }
 
     private fun setUpInitialViews() {
+        isThisInternal = true
         binding.radioGroup.check(
             if (sharedPref.getBoolean(MainViewModel.USE_HAMBURG, true)) {
                 R.id.home_radio
@@ -68,6 +74,7 @@ class MainFragment : Fragment(R.layout.main_fragment) {
                 R.id.gps_radio
             }
         )
+        isThisInternal = false
         binding.homeLocationText.text = sharedPref.getString(MainViewModel.STANDARD_NAME, "Hamburg")?.capitalize(Locale.GERMANY)
         binding.infoGroup.isVisible = sharedPref.getBoolean(MainViewModel.SHOW_INFO, true)
     }
@@ -78,7 +85,7 @@ class MainFragment : Fragment(R.layout.main_fragment) {
     }
 
     private fun setObservers() {
-        mainViewModel.status.observe(viewLifecycleOwner) { message -> showStatus(message) }
+        mainViewModel.status.observe(viewLifecycleOwner) { message -> requestFinished(message) }
 
         mainViewModel.cloudOpacity.observe(viewLifecycleOwner) { opacity -> binding.cloudOpacityData.text = opacity }
         mainViewModel.cloudVisibility.observe(viewLifecycleOwner) { visibility -> binding.cloudVisibilityData.text = visibility }
@@ -86,15 +93,20 @@ class MainFragment : Fragment(R.layout.main_fragment) {
         mainViewModel.cloudHeightFeet.observe(viewLifecycleOwner) { heightFeet -> binding.cloudHeightDataFeet.text = heightFeet }
         mainViewModel.cloudHeightMax.observe(viewLifecycleOwner) { show -> binding.cloudHeightMax.isVisible = show }
 
-        mainViewModel.locationName.observe(viewLifecycleOwner) { name -> requireActivity().toolbar.title = "Wetterstation: " + name.capitalize(Locale.GERMANY) }
+        mainViewModel.locationName.observe(viewLifecycleOwner) { name ->
+            requireActivity().toolbar.title = "Wetterstation: " + name.capitalize(Locale.GERMANY)
+        }
     }
 
     private fun setListener() {
         binding.swiperefreshMain.setOnRefreshListener { getDataFromLocation() }
         binding.radioGroup.setOnCheckedChangeListener { _, checkedId ->
-            Log.i("jan", R.id.gps_radio.toString())
-            sharedPref.edit().putBoolean(MainViewModel.USE_HAMBURG, checkedId == R.id.home_radio).apply()
-            getDataFromLocation()
+            if (isThisInternal) {
+                isThisInternal = false
+            } else {
+                sharedPref.edit().putBoolean(MainViewModel.USE_HAMBURG, checkedId == R.id.home_radio).apply()
+                getDataFromLocation()
+            }
             //binding.root.setBackgroundColor(Color.LTGRAY)
         }
         binding.cloudOpacityData.setOnClickListener {
@@ -106,7 +118,11 @@ class MainFragment : Fragment(R.layout.main_fragment) {
         }
         binding.homeLayout.setOnLongClickListener {
             if (!swiperefreshMain.isRefreshing) {
-                if (binding.radioGroup.checkedRadioButtonId == R.id.gps_radio && sharedPref.getString(MainViewModel.STANDARD_NAME, "null") != mainViewModel.locationName.value) {
+                if (binding.radioGroup.checkedRadioButtonId == R.id.gps_radio && sharedPref.getString(
+                        MainViewModel.STANDARD_NAME,
+                        "null"
+                    ) != mainViewModel.locationName.value
+                ) {
                     mainViewModel.storeNewStandardValues()
                     binding.homeLocationText.text = mainViewModel.locationName.value?.capitalize(Locale.GERMANY)
                     binding.infoGroup.isVisible = false
@@ -116,7 +132,13 @@ class MainFragment : Fragment(R.layout.main_fragment) {
             return@setOnLongClickListener true
         }
         binding.openWebButton.setOnClickListener {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://14-tage-wettervorhersage.de/wetter/aktuell/${mainViewModel.locationId.value.toString()}/"))) }
+            startActivity(
+                Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse("https://14-tage-wettervorhersage.de/wetter/aktuell/${mainViewModel.locationId.value.toString()}/")
+                )
+            )
+        }
     }
 
     private fun setupWebView() {
@@ -147,11 +169,10 @@ class MainFragment : Fragment(R.layout.main_fragment) {
                             val locationName = subUrl.substring(subUrl.indexOf("wetter") + 7, subUrl.indexOf("vorhersage") - 1)
                             mainViewModel.storeValues(locationId, locationName)
 
-                            Log.i("jan", subUrl)
                             binding.swiperefreshMain.setColorSchemeColors(getColor(requireContext(), R.color.blue))
                             mainViewModel.getData()
                         }
-                        else -> showStatus("getLocation() failed \n GPS turned on?")
+                        else -> requestFinished("getLocation() failed \n GPS turned on?")
                     }
                 }
             }
@@ -159,7 +180,7 @@ class MainFragment : Fragment(R.layout.main_fragment) {
         }
     }
 
-    private fun showStatus(message: String) {
+    private fun requestFinished(message: String) {
         binding.swiperefreshMain.let {
             it.isRefreshing = false
             it.setColorSchemeColors(Color.RED)
@@ -172,7 +193,37 @@ class MainFragment : Fragment(R.layout.main_fragment) {
             it.setColorSchemeColors(getColor(requireContext(), R.color.red))
             it.isRefreshing = true
         }
-        binding.webview.loadUrl("javascript:getLocation();")
+
+        if (sharedPref.getBoolean(MainViewModel.USE_HAMBURG, true)){
+            binding.swiperefreshMain.setColorSchemeColors(getColor(requireContext(), R.color.blue))
+            mainViewModel.getData()
+        } else {
+            if (checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                binding.webview.loadUrl("javascript:getLocation();")
+            } else {
+                requestFinished("success")
+                requestPermissions(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        if (requestCode == REQUEST_LOCATION) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                binding.swiperefreshMain.let {
+                    it.setColorSchemeColors(getColor(requireContext(), R.color.red))
+                    it.isRefreshing = true
+                }
+                binding.webview.loadUrl("javascript:getLocation();")
+            } else {
+                sharedPref.edit().putBoolean(MainViewModel.USE_HAMBURG, true).apply()
+                isThisInternal = true
+                binding.radioGroup.check(R.id.home_radio)
+                Snackbar.make(binding.root, "Ohne Standortberechtigungen ist nur die Abfrage der Gespeicherte Wetterstation möglich", Snackbar.LENGTH_SHORT).show()
+            }
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        }
     }
 
     override fun onDestroyView() {
