@@ -254,7 +254,14 @@
                     android:id="@+id/tempData"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingBottom="@dimen/two_grid_unit" />
+                    android:paddingBottom="@dimen/two_grid_unit"
+                    android:visibility="gone"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    tools:listitem="@layout/plane_list_item"
+                    tools:itemCount="4"/>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/open_web_button"
