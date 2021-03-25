@@ -1,12 +1,14 @@
 package com.example.cloudstine.main
 
+import android.Manifest
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.graphics.Paint
+import android.location.Location
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,32 +18,38 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.core.content.ContextCompat.getColor
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.cloudstine.R
-import com.example.cloudstine.api.UserApiService
+import com.example.cloudstine.api.CloudApiService
+import com.example.cloudstine.api.model.PlanesListEntity
 import com.example.cloudstine.databinding.MainFragmentBinding
+import com.example.cloudstine.main.RecyclerViewAdapter.PlanesListAdapter
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.main_activity.*
 import kotlinx.android.synthetic.main.main_fragment.*
 import java.util.*
-import java.util.jar.Manifest
 
 
 class MainFragment : Fragment(R.layout.main_fragment) {
 
     private val REQUEST_LOCATION = 1
 
-    private lateinit var sharedPref: SharedPreferences
-
     private var _binding: MainFragmentBinding? = null
     private val binding get() = _binding!!
 
+    private lateinit var sharedPref: SharedPreferences
     private lateinit var mainViewModel: MainViewModel
     private lateinit var mainViewModelFactory: MainViewModelFactory
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     private var isThisInternal = false
+    private var second = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
 
@@ -53,11 +61,20 @@ class MainFragment : Fragment(R.layout.main_fragment) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-            setupViewModel()
+        setupViewModel()
 
-            setObservers()
-            setListener()
-            setupWebView()
+        setObservers()
+        setListener()
+        setupWebView()
+        checkPermission()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            binding.gpsRadio.isInvisible = false
+            binding.gpsText.paintFlags = Paint.ANTI_ALIAS_FLAG
+        }
     }
 
     private fun setupBindingAndShardPref(inflater: LayoutInflater, container: ViewGroup?) {
@@ -85,7 +102,14 @@ class MainFragment : Fragment(R.layout.main_fragment) {
     }
 
     private fun setObservers() {
-        mainViewModel.status.observe(viewLifecycleOwner) { message -> requestFinished(message) }
+        mainViewModel.cloudStatus.observe(viewLifecycleOwner) { message ->
+            requestFinished()
+            requestFinishedClouds(message)
+        }
+        mainViewModel.planeStatus.observe(viewLifecycleOwner) { message ->
+            requestFinished()
+            requestFinishedPlanes(message)
+        }
 
         mainViewModel.cloudOpacity.observe(viewLifecycleOwner) { opacity -> binding.cloudOpacityData.text = opacity }
         mainViewModel.cloudVisibility.observe(viewLifecycleOwner) { visibility -> binding.cloudVisibilityData.text = visibility }
@@ -93,13 +117,31 @@ class MainFragment : Fragment(R.layout.main_fragment) {
         mainViewModel.cloudHeightFeet.observe(viewLifecycleOwner) { heightFeet -> binding.cloudHeightDataFeet.text = heightFeet }
         mainViewModel.cloudHeightMax.observe(viewLifecycleOwner) { show -> binding.cloudHeightMax.isVisible = show }
 
+        mainViewModel.planeList.observe(viewLifecycleOwner) { planes -> fillAdapter(planes) }
+
         mainViewModel.locationName.observe(viewLifecycleOwner) { name ->
             requireActivity().toolbar.title = "Wetterstation: " + name.capitalize(Locale.GERMANY)
         }
     }
 
+    private fun fillAdapter(planes: PlanesListEntity?) {
+        if (planes?.states != null) {
+            binding.noPlanes.isVisible = false
+            binding.planesRecycler.let {
+                it.isVisible = true
+                it.adapter = PlanesListAdapter(planes.states, mainViewModel.location.value!!)
+                it.layoutManager = LinearLayoutManager(requireContext())
+            }
+        } else {
+            binding.planesRecycler.isVisible = false
+            binding.noPlanes.isVisible = true
+        }
+    }
+
     private fun setListener() {
-        binding.swiperefreshMain.setOnRefreshListener { getDataFromLocation() }
+        binding.swiperefreshMain.setOnRefreshListener {
+            getDataFromLocation()
+        mainViewModel.getPlaneData()}
         binding.radioGroup.setOnCheckedChangeListener { _, checkedId ->
             if (isThisInternal) {
                 isThisInternal = false
@@ -155,12 +197,13 @@ class MainFragment : Fragment(R.layout.main_fragment) {
             }
             it.webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-                    view?.loadUrl(url ?: UserApiService.BASE_URL)
+                    view?.loadUrl(url ?: CloudApiService.CLOUDS_BASE_URL)
                     return true
                 }
 
                 override fun onPageFinished(view: WebView?, url: String) {
                     super.onPageFinished(view, url)
+                    binding.webview.isVisible = false
                     when {
                         url == ("https://14-tage-wettervorhersage.de/") -> getDataFromLocation()
                         url.substring(30).contains("vorhersage") -> {
@@ -170,22 +213,51 @@ class MainFragment : Fragment(R.layout.main_fragment) {
                             mainViewModel.storeValues(locationId, locationName)
 
                             binding.swiperefreshMain.setColorSchemeColors(getColor(requireContext(), R.color.blue))
-                            mainViewModel.getData()
+                            mainViewModel.getCloudData()
                         }
-                        else -> requestFinished("getLocation() failed \n GPS turned on?")
+                        url.contains("captcha") -> {
+                            binding.planesRecycler.isVisible = false
+                            binding.cloudOpacityData.text = "-"
+                            binding.cloudHeightDataFeet.text = "-"
+                            binding.cloudHeightDataMeter.text = ""
+                            binding.cloudVisibilityData.text = "-"
+                            binding.webview.isVisible = true
+                        }
+                        else -> {
+                            requestFinished("Server für Wetteranfrage reagiert nicht")
+                        }
                     }
                 }
             }
-            it.loadUrl(UserApiService.BASE_URL)
+            it.loadUrl(CloudApiService.CLOUDS_BASE_URL)
         }
     }
 
-    private fun requestFinished(message: String) {
-        binding.swiperefreshMain.let {
-            it.isRefreshing = false
-            it.setColorSchemeColors(Color.RED)
-        }
-        if (message != "success") Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+    private fun requestFinished(message: String? = null) {
+        if (second) {
+            second = false
+            binding.swiperefreshMain.let {
+                it.isRefreshing = false
+                it.setColorSchemeColors(Color.RED)
+            }
+        } else second = true
+        message?.let { Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show() }
+    }
+
+    private fun requestFinishedClouds(message: String){
+        if (message != "success") {
+            Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+            binding.tempDataClouds.text = message
+            binding.tempDataClouds.isVisible = true
+        } else binding.tempDataClouds.isVisible = false
+    }
+
+    private fun requestFinishedPlanes(message: String){
+        if (message != "success"){
+            Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+            binding.tempDataPlanes.text = message
+            binding.tempDataPlanes.isVisible = true
+        } else binding.tempDataPlanes.isVisible = false
     }
 
     private fun getDataFromLocation() {
@@ -193,33 +265,51 @@ class MainFragment : Fragment(R.layout.main_fragment) {
             it.setColorSchemeColors(getColor(requireContext(), R.color.red))
             it.isRefreshing = true
         }
-
-        if (sharedPref.getBoolean(MainViewModel.USE_HAMBURG, true)){
+        if (sharedPref.getBoolean(MainViewModel.USE_HAMBURG, true)) {
             binding.swiperefreshMain.setColorSchemeColors(getColor(requireContext(), R.color.blue))
-            mainViewModel.getData()
+            mainViewModel.getCloudData()
         } else {
-            if (checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                binding.webview.loadUrl("javascript:getLocation();")
-            } else {
-                requestFinished("success")
-                requestPermissions(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
-            }
+            binding.webview.loadUrl("javascript:getLocation();")
         }
+    }
+
+    private fun checkPermission() {
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
+        if (checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+                if (location != null) {
+                    mainViewModel.storeNewLocation(location)
+                    mainViewModel.getPlaneData()
+                }
+            }
+        } else {
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
+        }
+
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         if (requestCode == REQUEST_LOCATION) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED){
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 binding.swiperefreshMain.let {
                     it.setColorSchemeColors(getColor(requireContext(), R.color.red))
                     it.isRefreshing = true
                 }
+                binding.gpsRadio.isInvisible = false
+                binding.gpsText.paintFlags = Paint.ANTI_ALIAS_FLAG
+                checkPermission()
                 binding.webview.loadUrl("javascript:getLocation();")
             } else {
                 sharedPref.edit().putBoolean(MainViewModel.USE_HAMBURG, true).apply()
                 isThisInternal = true
                 binding.radioGroup.check(R.id.home_radio)
-                Snackbar.make(binding.root, "Ohne Standortberechtigungen ist nur die Abfrage der Gespeicherte Wetterstation möglich", Snackbar.LENGTH_SHORT).show()
+                binding.gpsRadio.isInvisible = true
+                binding.gpsText.paintFlags = Paint.STRIKE_THRU_TEXT_FLAG
+                Snackbar.make(
+                    binding.root,
+                    "Ohne Standortberechtigungen ist nur die Abfrage der Gespeicherte Wetterstation möglich",
+                    Snackbar.LENGTH_SHORT
+                ).show()
             }
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults)

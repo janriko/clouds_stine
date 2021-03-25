@@ -25,7 +25,12 @@ class SplashActivity : AppCompatActivity(R.layout.activity_splash) {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         handler.removeCallbacksAndMessages(null)
+        super.onDestroy()
+    }
+
+    override fun onPause() {
+        handler.removeCallbacksAndMessages(null)
+        super.onPause()
     }
 }

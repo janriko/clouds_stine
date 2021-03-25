@@ -2,13 +2,18 @@ package com.example.cloudstine.main
 
 import android.app.Activity
 import android.content.SharedPreferences
+import android.location.Location
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.cloudstine.api.model.PlanesListEntity
 import com.example.cloudstine.repositories.CloudRepository
+import com.example.cloudstine.repositories.PlaneRepository
 import kotlinx.coroutines.launch
 import java.lang.StringBuilder
+import java.util.*
 import kotlin.math.roundToInt
 
 class MainViewModel(activity: Activity) : ViewModel() {
@@ -19,6 +24,8 @@ class MainViewModel(activity: Activity) : ViewModel() {
         const val USE_HAMBURG = "useHamburg"
         const val STANDARD_ID = "standardId"
         const val STANDARD_NAME = "standardName"
+
+        private const val RADIUS = 1f //0.3f
 
         private const val START_OPACITY = "Bewölkung"
         private const val START_HEIGHT = "Wolkenhöhe"
@@ -42,8 +49,17 @@ class MainViewModel(activity: Activity) : ViewModel() {
     private val _cloudVisibility = MutableLiveData<String>()
     val cloudVisibility: LiveData<String> = _cloudVisibility
 
-    private val _status = MutableLiveData<String>()
-    val status: LiveData<String> = _status
+    private val _cloudStatus = MutableLiveData<String>()
+    val cloudStatus: LiveData<String> = _cloudStatus
+
+    private val _planeList = MutableLiveData<PlanesListEntity>()
+    val planeList: LiveData<PlanesListEntity> = _planeList
+
+    private val _planeStatus = MutableLiveData<String>()
+    val planeStatus: LiveData<String> = _planeStatus
+
+    private val _location = MutableLiveData<Location>()
+    val location: LiveData<Location> = _location
 
     private val _locationId = MutableLiveData<Int>()
     val locationId: LiveData<Int> = _locationId
@@ -52,31 +68,51 @@ class MainViewModel(activity: Activity) : ViewModel() {
     val locationName: LiveData<String> = _locationName
 
     private val cloudRepository = CloudRepository()
+    private val planeRepository = PlaneRepository()
 
 
-    fun getData() {
+    fun getCloudData() {
         viewModelScope.launch {
             try {
                 var useId = _locationId.value
-                if (sharedPreferences.getBoolean(USE_HAMBURG,true)){
+                if (sharedPreferences.getBoolean(USE_HAMBURG, true)) {
                     useId = sharedPreferences.getInt(STANDARD_ID, 178556)
                     _locationName.value = sharedPreferences.getString(STANDARD_NAME, "Hamburg")
                 }
 
-                val allData = cloudRepository.getData( useId.toString()).body()!!.string()
+                val allData = cloudRepository.getData(useId.toString()).body()!!.string()
+                if (allData.substring(0, 100).contains("Ungewöhnliche Zugriffe erkannt")) {
+                    throw(Exception("captcha"))
+                }
 
                 _cloudOpacity.value = getCutData(allData, START_OPACITY, 30)
                 _cloudHeightMeter.value = getCutData(allData, START_HEIGHT, 32)
                 _cloudHeightFeet.value = convertHeightToFeet(getCutData(allData, START_HEIGHT, 32))
                 _cloudVisibility.value = getCutData(allData, START_VISIBILITY, 31)
-                _status.value = "success"
+                _cloudStatus.value = "success"
             } catch (exception: Exception) {
-                _status.value = exception.message?:"error"
+                _cloudStatus.value = exception.message ?: "cloud error"
             }
         }
     }
 
-    fun getCutData(allData: String, startString: String, offset: Int): String{
+    fun getPlaneData() {
+        if (_location.value != null) {
+            val locationSquare = getLocationSquare(_location.value!!.latitude.toFloat(), location.value!!.longitude.toFloat())
+            Log.i("jan", locationSquare.contentToString())
+            viewModelScope.launch {
+                try {
+                    _planeList.value = planeRepository.getData(locationSquare[0], locationSquare[1], locationSquare[2], locationSquare[3])
+                    _planeStatus.value = "success"
+                } catch (exception: Exception) {
+                    Log.i("janPlanes", exception.toString())
+                    _planeStatus.value = exception.toString() ?: "plane error"
+                }
+            }
+        } else _planeStatus.value = "GPS angeschaltet?"
+    }
+
+    fun getCutData(allData: String, startString: String, offset: Int): String {
         val startIndex = allData.indexOf(startString, ignoreCase = true) + offset
         val endIndex = allData.indexOf("<", startIndex)
         return allData.substring(startIndex, endIndex)
@@ -89,14 +125,17 @@ class MainViewModel(activity: Activity) : ViewModel() {
 
     fun storeNewStandardValues() {
         sharedPreferences.edit().let {
-            it.putInt(STANDARD_ID, _locationId.value?:178556)
-            it.putString(STANDARD_NAME, _locationName.value?:"Hamburg")
+            it.putInt(STANDARD_ID, _locationId.value ?: 178556)
+            it.putString(STANDARD_NAME, _locationName.value ?: "Hamburg")
             it.apply()
         }
-
     }
 
-    fun cutUnit(height: String): Float{
+    fun storeNewLocation(location: Location) {
+        _location.value = location
+    }
+
+    fun cutUnit(height: String): Float {
         val noMHeight = (height.substring(0, height.indexOf("m") - 1))
         val germanWithoutFirst = noMHeight.replace(".", "")
         val englishComma = germanWithoutFirst.replace(",", ".")
@@ -104,7 +143,7 @@ class MainViewModel(activity: Activity) : ViewModel() {
     }
 
     private fun convertHeightToFeet(height: String): String {
-        val  floatHeight = cutUnit(height)
+        val floatHeight = cutUnit(height)
         _showCloudHeightMax.value = floatHeight == 12192.0f
         val heightInFeet = floatHeight * 3.2808f
         val roundedHeight = heightInFeet.roundToInt()
@@ -119,7 +158,12 @@ class MainViewModel(activity: Activity) : ViewModel() {
             else -> feetString
 
         }
-        val stringWithFt =  StringBuilder(stringWithDot).append(" ft")
+        val stringWithFt = StringBuilder(stringWithDot).append(" ft")
         return stringWithFt.toString()
+    }
+
+    private fun getLocationSquare(latitude: Float, longitude: Float): Array<Float> {
+        //ca 20km Radius -> 40 x 40 square (bisschen mehr)
+        return arrayOf(latitude - RADIUS, longitude - RADIUS, latitude + RADIUS, longitude + RADIUS)
     }
 }

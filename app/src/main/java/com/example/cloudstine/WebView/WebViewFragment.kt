@@ -12,9 +12,8 @@ import android.webkit.WebViewClient
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.cloudstine.R
-import com.example.cloudstine.api.UserApiService
+import com.example.cloudstine.api.CloudApiService
 import com.example.cloudstine.databinding.WebViewBinding
-import com.example.cloudstine.main.MainFragmentDirections
 
 class WebViewFragment : Fragment(R.layout.web_view) {
 
@@ -48,7 +47,7 @@ class WebViewFragment : Fragment(R.layout.web_view) {
             }
             it.webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-                    view?.loadUrl(url ?: UserApiService.BASE_URL)
+                    view?.loadUrl(url ?: CloudApiService.CLOUDS_BASE_URL)
                     return true
                 }
 
@@ -74,7 +73,7 @@ class WebViewFragment : Fragment(R.layout.web_view) {
                 }
             }
 
-            it.loadUrl(UserApiService.BASE_URL)
+            it.loadUrl(CloudApiService.CLOUDS_BASE_URL)
         }
     }
 

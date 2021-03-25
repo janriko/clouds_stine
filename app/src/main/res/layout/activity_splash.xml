@@ -3,7 +3,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
-    android:scaleX="0.6"
-    android:scaleY="0.6"
-    android:contentDescription="@string/sheiwe_logo_description"
+    android:scaleX="1"
+    android:scaleY="1"
+    android:contentDescription="@string/logo_description"
     android:src="@drawable/ic_splash_clouds_pastel" />
