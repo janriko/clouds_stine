@@ -4,8 +4,51 @@ package com.example.cloudstine.api.model
 import com.google.gson.annotations.SerializedName
 
 data class PlaneEntity(
-    @SerializedName("states")
-    val states: List<List<Any>>,
-    @SerializedName("time")
-    val time: Int
+    @SerializedName("icao24")
+    val icao24: String,
+
+    @SerializedName("callsign")
+    val callsign: String,
+
+    @SerializedName("origin_country")
+    val origin_country: String,
+/*
+    @SerializedName("time_position")
+    val time_position: Int,
+
+    @SerializedName("last_contact")
+    val last_contact: Int,
+*/
+    @SerializedName("longitude")
+    val longitude: Double,
+
+    @SerializedName("latitude")
+    val latitude: Double,
+
+    @SerializedName("baro_altitude")
+    val baro_altitude: Double,
+
+    @SerializedName("on_ground")
+    val on_ground: Boolean,
+
+    @SerializedName("velocity")
+    val velocity: Double,
+
+    @SerializedName("true_track")
+    val true_track: Double,
+
+    @SerializedName("vertical_rate")
+    val vertical_rate: Double,
+
+    @SerializedName("geo_altitude")
+    val geo_altitude: Double,
+
+ //   @SerializedName("squawk")
+ //   val squawk: String,
+
+    @SerializedName("spi")
+    val spi: Boolean,
+
+    @SerializedName("position_source")
+    val position_source: Double
 )
