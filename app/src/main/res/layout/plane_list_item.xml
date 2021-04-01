@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
 
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
@@ -11,133 +12,134 @@
         android:layout_marginHorizontal="@dimen/one_grid_unit"
         android:layout_marginTop="@dimen/one_grid_unit"
         android:layout_marginBottom="@dimen/one_grid_unit"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:strokeWidth="1dp"
+        app:strokeColor="@color/brightPrimary"
+        app:cardElevation="0dp">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
 
-            <TextView
-                android:id="@+id/icao_title"
+            <LinearLayout
+                android:id="@+id/linearLayout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/one_grid_unit"
-                android:layout_marginTop="@dimen/one_grid_unit"
-                android:text="@string/icao"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/one_grid_unit"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/icao_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/one_grid_unit"
+                        android:text="@string/icao" />
 
 
-            <TextView
-                android:id="@+id/icao_data"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintStart_toStartOf="@id/icao_title"
-                app:layout_constraintTop_toBottomOf="@id/icao_title"
-                tools:text="B3K127" />
+                    <TextView
+                        android:id="@+id/icao_data"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/no_data"
+                        tools:text="B3K127" />
 
 
-            <androidx.constraintlayout.widget.Guideline
-                android:id="@+id/guideline2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                app:layout_constraintStart_toStartOf="parent" />
-
-            <TextView
-                android:id="@+id/callsign_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/three_grid_unit"
-                android:layout_marginTop="@dimen/one_grid_unit"
-                android:text="@string/callsign"
-                app:layout_constraintStart_toEndOf="@id/distance_title"
-                app:layout_constraintTop_toTopOf="parent" />
+                    <TextView
+                        android:id="@+id/distance_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/one_grid_unit"
+                        android:text="@string/entfernung" />
 
 
-            <TextView
-                android:id="@+id/callsign_data"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintStart_toStartOf="@+id/callsign_title"
-                app:layout_constraintTop_toBottomOf="@id/callsign_title"
-                tools:text="LH237" />
+                    <TextView
+                        android:id="@+id/distance_data"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/no_data"
+                        tools:text="3 km" />
 
-            <TextView
-                android:id="@+id/distance_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/one_grid_unit"
-                android:layout_marginTop="@dimen/one_grid_unit"
-                android:text="@string/entfernung"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/icao_data" />
+                    <TextView
+                        android:id="@+id/plane_type_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/one_grid_unit"
+                        android:text="@string/typ" />
 
 
-            <TextView
-                android:id="@+id/distance_data"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintStart_toStartOf="@+id/distance_title"
-                app:layout_constraintTop_toBottomOf="@id/distance_title"
-                tools:text="3 km" />
+                    <TextView
+                        android:id="@+id/plane_type_data"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/one_grid_unit"
+                        android:text="@string/no_data"
+                        tools:text="A320" />
+                </LinearLayout>
 
-            <TextView
-                android:id="@+id/height_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/height"
-                app:layout_constraintStart_toStartOf="@id/callsign_title"
-                app:layout_constraintTop_toTopOf="@id/distance_title" />
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/four_grid_unit"
+                    android:orientation="vertical">
 
-
-            <TextView
-                android:id="@+id/height_data"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintStart_toStartOf="@+id/height_title"
-                app:layout_constraintTop_toBottomOf="@id/height_title"
-                tools:text="4000ft" />
-
-            <TextView
-                android:id="@+id/plane_type_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/one_grid_unit"
-                android:layout_marginTop="@dimen/one_grid_unit"
-                android:text="@string/typ"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/distance_data" />
+                    <TextView
+                        android:id="@+id/callsign_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/one_grid_unit"
+                        android:text="@string/callsign" />
 
 
-            <TextView
-                android:id="@+id/plane_type_data"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintStart_toStartOf="@+id/plane_type_title"
-                app:layout_constraintTop_toBottomOf="@id/plane_type_title"
-                app:layout_constraintBottom_toBottomOf="parent"
-                android:layout_marginBottom="@dimen/one_grid_unit"
-                tools:text="A320" />
-
-            <TextView
-                android:id="@+id/company_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/fluggesellschaft"
-                app:layout_constraintStart_toStartOf="@id/callsign_title"
-                app:layout_constraintTop_toTopOf="@id/plane_type_title" />
+                    <TextView
+                        android:id="@+id/callsign_data"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/no_data"
+                        tools:text="LH237" />
 
 
-            <TextView
-                android:id="@+id/company_data"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintStart_toStartOf="@+id/company_title"
-                app:layout_constraintTop_toBottomOf="@id/company_title"
-                tools:text="Luftahnsa" />
+                    <TextView
+                        android:id="@+id/height_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/one_grid_unit"
+                        android:text="@string/height" />
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <TextView
+                        android:id="@+id/height_data"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/no_data"
+                        tools:text="4000ft" />
+
+
+                    <TextView
+                        android:id="@+id/company_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/one_grid_unit"
+                        android:text="@string/fluggesellschaft" />
+
+
+                    <TextView
+                        android:id="@+id/company_data"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/one_grid_unit"
+                        android:text="@string/no_data"
+                        tools:text="Luftahnsa" />
+
+                </LinearLayout>
+
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_height="match_parent"
+                android:layout_width="match_parent"
+                android:layout_margin="@dimen/four_grid_unit"
+                app:srcCompat="@drawable/no_plane_found" />
+            </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 </LinearLayout>

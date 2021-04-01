@@ -34,11 +34,15 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.main_activity.*
 import kotlinx.android.synthetic.main.main_fragment.*
 import java.util.*
+import kotlin.concurrent.fixedRateTimer
 
 
 class MainFragment : Fragment(R.layout.main_fragment) {
 
-    private val REQUEST_LOCATION = 1
+    private companion object {
+        const val REQUEST_LOCATION = 1
+        const val PLANE_REFRESH_RATE_SECONDS = 10
+    }
 
     private var _binding: MainFragmentBinding? = null
     private val binding get() = _binding!!
@@ -47,9 +51,9 @@ class MainFragment : Fragment(R.layout.main_fragment) {
     private lateinit var mainViewModel: MainViewModel
     private lateinit var mainViewModelFactory: MainViewModelFactory
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var planeTimer: Timer
 
-    private var isThisInternal = false
-    private var second = false
+    private var isThisInternalRadioButtonCall = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
 
@@ -66,15 +70,20 @@ class MainFragment : Fragment(R.layout.main_fragment) {
         setObservers()
         setListener()
         setupWebView()
-        checkPermission()
     }
 
     override fun onResume() {
         super.onResume()
-        if (checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             binding.gpsRadio.isInvisible = false
             binding.gpsText.paintFlags = Paint.ANTI_ALIAS_FLAG
         }
+        checkPermission()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        planeTimer.cancel()
     }
 
     private fun setupBindingAndShardPref(inflater: LayoutInflater, container: ViewGroup?) {
@@ -83,7 +92,7 @@ class MainFragment : Fragment(R.layout.main_fragment) {
     }
 
     private fun setUpInitialViews() {
-        isThisInternal = true
+        isThisInternalRadioButtonCall = true
         binding.radioGroup.check(
             if (sharedPref.getBoolean(MainViewModel.USE_HAMBURG, true)) {
                 R.id.home_radio
@@ -91,7 +100,7 @@ class MainFragment : Fragment(R.layout.main_fragment) {
                 R.id.gps_radio
             }
         )
-        isThisInternal = false
+        isThisInternalRadioButtonCall = false
         binding.homeLocationText.text = sharedPref.getString(MainViewModel.STANDARD_NAME, "Hamburg")?.capitalize(Locale.GERMANY)
         binding.infoGroup.isVisible = sharedPref.getBoolean(MainViewModel.SHOW_INFO, true)
     }
@@ -102,14 +111,8 @@ class MainFragment : Fragment(R.layout.main_fragment) {
     }
 
     private fun setObservers() {
-        mainViewModel.cloudStatus.observe(viewLifecycleOwner) { message ->
-            requestFinished()
-            requestFinishedClouds(message)
-        }
-        mainViewModel.planeStatus.observe(viewLifecycleOwner) { message ->
-            requestFinished()
-            requestFinishedPlanes(message)
-        }
+        mainViewModel.cloudStatus.observe(viewLifecycleOwner) { message -> requestFinishedClouds(message) }
+        mainViewModel.planeStatus.observe(viewLifecycleOwner) { message -> requestFinishedPlanes(message) }
 
         mainViewModel.cloudOpacity.observe(viewLifecycleOwner) { opacity -> binding.cloudOpacityData.text = opacity }
         mainViewModel.cloudVisibility.observe(viewLifecycleOwner) { visibility -> binding.cloudVisibilityData.text = visibility }
@@ -140,14 +143,15 @@ class MainFragment : Fragment(R.layout.main_fragment) {
 
     private fun setListener() {
         binding.swiperefreshMain.setOnRefreshListener {
-            getDataFromLocation()
-        mainViewModel.getPlaneData()}
+            getCloudDataFromLocation()
+            //mainViewModel.getPlaneData()
+        }
         binding.radioGroup.setOnCheckedChangeListener { _, checkedId ->
-            if (isThisInternal) {
-                isThisInternal = false
+            if (isThisInternalRadioButtonCall) {
+                isThisInternalRadioButtonCall = false
             } else {
                 sharedPref.edit().putBoolean(MainViewModel.USE_HAMBURG, checkedId == R.id.home_radio).apply()
-                getDataFromLocation()
+                getCloudDataFromLocation()
             }
             //binding.root.setBackgroundColor(Color.LTGRAY)
         }
@@ -205,7 +209,7 @@ class MainFragment : Fragment(R.layout.main_fragment) {
                     super.onPageFinished(view, url)
                     binding.webview.isVisible = false
                     when {
-                        url == ("https://14-tage-wettervorhersage.de/") -> getDataFromLocation()
+                        url == ("https://14-tage-wettervorhersage.de/") -> getCloudDataFromLocation()
                         url.substring(30).contains("vorhersage") -> {
                             val subUrl = url.substring(30)
                             val locationId = subUrl.substring(subUrl.indexOf("vorhersage") + 11, subUrl.length - 1).toInt()
@@ -224,7 +228,7 @@ class MainFragment : Fragment(R.layout.main_fragment) {
                             binding.webview.isVisible = true
                         }
                         else -> {
-                            requestFinished("Server für Wetteranfrage reagiert nicht")
+                            requestFinishedClouds("Server für Wetteranfrage reagiert nicht")
                         }
                     }
                 }
@@ -233,18 +237,8 @@ class MainFragment : Fragment(R.layout.main_fragment) {
         }
     }
 
-    private fun requestFinished(message: String? = null) {
-        if (second) {
-            second = false
-            binding.swiperefreshMain.let {
-                it.isRefreshing = false
-                it.setColorSchemeColors(Color.RED)
-            }
-        } else second = true
-        message?.let { Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show() }
-    }
-
-    private fun requestFinishedClouds(message: String){
+    private fun requestFinishedClouds(message: String) {
+        binding.swiperefreshMain.isRefreshing = false
         if (message != "success") {
             Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
             binding.tempDataClouds.text = message
@@ -252,25 +246,27 @@ class MainFragment : Fragment(R.layout.main_fragment) {
         } else binding.tempDataClouds.isVisible = false
     }
 
-    private fun requestFinishedPlanes(message: String){
-        if (message != "success"){
+    private fun requestFinishedPlanes(message: String) {
+        binding.linearProgressIndicatorPlanes.isInvisible = true
+        if (message != "success") {
             Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
             binding.tempDataPlanes.text = message
             binding.tempDataPlanes.isVisible = true
         } else binding.tempDataPlanes.isVisible = false
     }
 
-    private fun getDataFromLocation() {
-        binding.swiperefreshMain.let {
-            it.setColorSchemeColors(getColor(requireContext(), R.color.red))
-            it.isRefreshing = true
-        }
+    private fun getCloudDataFromLocation() {
+        binding.swiperefreshMain.isRefreshing = true
         if (sharedPref.getBoolean(MainViewModel.USE_HAMBURG, true)) {
-            binding.swiperefreshMain.setColorSchemeColors(getColor(requireContext(), R.color.blue))
             mainViewModel.getCloudData()
         } else {
             binding.webview.loadUrl("javascript:getLocation();")
         }
+    }
+
+    private fun getPlaneDataFromLocation() {
+        binding.linearProgressIndicatorPlanes.isInvisible = false
+        mainViewModel.getPlaneData()
     }
 
     private fun checkPermission() {
@@ -279,7 +275,11 @@ class MainFragment : Fragment(R.layout.main_fragment) {
             fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
                 if (location != null) {
                     mainViewModel.storeNewLocation(location)
-                    mainViewModel.getPlaneData()
+                    planeTimer = fixedRateTimer("planesRefreshTimer", false, 0L, PLANE_REFRESH_RATE_SECONDS * 1000L) {
+                        requireActivity().runOnUiThread {
+                            getPlaneDataFromLocation()
+                        }
+                    }
                 }
             }
         } else {
@@ -291,17 +291,13 @@ class MainFragment : Fragment(R.layout.main_fragment) {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         if (requestCode == REQUEST_LOCATION) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                binding.swiperefreshMain.let {
-                    it.setColorSchemeColors(getColor(requireContext(), R.color.red))
-                    it.isRefreshing = true
-                }
                 binding.gpsRadio.isInvisible = false
                 binding.gpsText.paintFlags = Paint.ANTI_ALIAS_FLAG
+                getCloudDataFromLocation()
                 checkPermission()
-                binding.webview.loadUrl("javascript:getLocation();")
             } else {
                 sharedPref.edit().putBoolean(MainViewModel.USE_HAMBURG, true).apply()
-                isThisInternal = true
+                isThisInternalRadioButtonCall = true
                 binding.radioGroup.check(R.id.home_radio)
                 binding.gpsRadio.isInvisible = true
                 binding.gpsText.paintFlags = Paint.STRIKE_THRU_TEXT_FLAG

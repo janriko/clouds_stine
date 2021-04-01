@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cloudstine.api.model.PlaneEntity
 import com.example.cloudstine.databinding.PlaneListItemBinding
+import okhttp3.Cache.Companion.hasVaryAll
 
 class PlanesListAdapter (private val data: List<PlaneEntity>, private val location: Location) : RecyclerView.Adapter<PlanesListAdapter.ViewHolder>() {
 
@@ -21,11 +22,7 @@ class PlanesListAdapter (private val data: List<PlaneEntity>, private val locati
         fun bind(planeEntity: PlaneEntity, location: Location) {
             binding.icaoData.text = planeEntity.icao24
             binding.callsignData.text = planeEntity.callsign
-            binding.distanceData.text = "-"
-            val results = FloatArray(3)
-            Location.distanceBetween(planeEntity.latitude.toDouble(), planeEntity.longitude.toDouble(), location.latitude, location.longitude, results)
-            binding.distanceData.text = results[0].toString()
-            binding.companyData.text
+            binding.distanceData.text = planeEntity.distance.toString().plus(" m")
 /*
             Glide.with(itemView.context)
                 .load(questionEntity.owner.profileImage)

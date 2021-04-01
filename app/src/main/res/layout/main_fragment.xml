@@ -273,6 +273,12 @@
                     android:text="@string/no_planes"
                     android:visibility="gone"/>
 
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/linear_progress_indicator_planes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:indeterminate="true" />
+
                <androidx.recyclerview.widget.RecyclerView
                    android:id="@+id/planes_recycler"
                     android:layout_width="match_parent"

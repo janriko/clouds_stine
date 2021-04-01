@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.SharedPreferences
 import android.location.Location
 import android.util.Log
+import androidx.core.content.contentValuesOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -77,7 +78,7 @@ class MainViewModel(activity: Activity) : ViewModel() {
                 var useId = _locationId.value
                 if (sharedPreferences.getBoolean(USE_HAMBURG, true)) {
                     useId = sharedPreferences.getInt(STANDARD_ID, 178556)
-                    _locationName.value = sharedPreferences.getString(STANDARD_NAME, "Hamburg")
+                    _locationName.postValue(sharedPreferences.getString(STANDARD_NAME, "Hamburg"))
                 }
 
                 val allData = cloudRepository.getData(useId.toString()).body()!!.string()
@@ -85,13 +86,13 @@ class MainViewModel(activity: Activity) : ViewModel() {
                     throw(Exception("captcha"))
                 }
 
-                _cloudOpacity.value = getCutData(allData, START_OPACITY, 30)
-                _cloudHeightMeter.value = getCutData(allData, START_HEIGHT, 32)
-                _cloudHeightFeet.value = convertHeightToFeet(getCutData(allData, START_HEIGHT, 32))
-                _cloudVisibility.value = getCutData(allData, START_VISIBILITY, 31)
-                _cloudStatus.value = "success"
+                _cloudOpacity.postValue(getCutData(allData, START_OPACITY, 30))
+                _cloudHeightMeter.postValue(getCutData(allData, START_HEIGHT, 32))
+                _cloudHeightFeet.postValue(convertHeightToFeet(getCutData(allData, START_HEIGHT, 32)))
+                _cloudVisibility.postValue(getCutData(allData, START_VISIBILITY, 31))
+                _cloudStatus.postValue("success")
             } catch (exception: Exception) {
-                _cloudStatus.value = exception.message ?: "cloud error"
+                _cloudStatus.postValue(exception.message ?: "cloud error")
             }
         }
     }
@@ -102,14 +103,32 @@ class MainViewModel(activity: Activity) : ViewModel() {
             Log.i("jan", locationSquare.contentToString())
             viewModelScope.launch {
                 try {
-                    _planeList.value = planeRepository.getData(locationSquare[0], locationSquare[1], locationSquare[2], locationSquare[3])
-                    _planeStatus.value = "success"
+                    val unsortedList = planeRepository.getData(locationSquare[0], locationSquare[1], locationSquare[2], locationSquare[3])
+                    _planeList.postValue(sortList(unsortedList))
+                    _planeStatus.postValue("success")
                 } catch (exception: Exception) {
-                    Log.i("janPlanes", exception.toString())
-                    _planeStatus.value = exception.toString() ?: "plane error"
+                    _planeStatus.postValue(exception.toString())
                 }
             }
-        } else _planeStatus.value = "GPS angeschaltet?"
+        } else _planeStatus.postValue("GPS angeschaltet?")
+    }
+
+    private fun sortList(unsortedList: PlanesListEntity): PlanesListEntity {
+        for (planeEntity in unsortedList.states) {
+            val results = FloatArray(3)
+            if (planeEntity.latitude != null && planeEntity.longitude != null && _location.value != null) {
+                Location.distanceBetween(
+                    planeEntity.latitude.toDouble(),
+                    planeEntity.longitude.toDouble(),
+                    _location.value!!.latitude,
+                    _location.value!!.longitude,
+                    results
+                )
+                Log.i("jan", results.contentToString())
+            }
+            planeEntity.distance = results[0].roundToInt()
+        }
+        return PlanesListEntity(unsortedList.time, unsortedList.states.sortedBy { it.distance })
     }
 
     fun getCutData(allData: String, startString: String, offset: Int): String {
