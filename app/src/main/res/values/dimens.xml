@@ -6,4 +6,5 @@
     <dimen name="four_grid_unit">32dp</dimen>
     <dimen name="five_grid_unit">40dp</dimen>
     <dimen name="six_grid_unit">48dp</dimen>
+    <dimen name="text_margin">16dp</dimen>
 </resources>

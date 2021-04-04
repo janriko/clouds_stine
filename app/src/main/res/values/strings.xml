@@ -13,7 +13,7 @@
     <string name="detail_email">Email:</string>
     <string name="detail_name">Name:</string>
     <string name="detail_employment_title">Emplyment Title:</string>
-    <string name="sheiwe_logo_description">Fotostudio Scheiwe Logo</string>
+    <string name="logo_description">Logo</string>
     <string name="cloud_height_meter_label">Wolkenhöhe:</string>
     <string name="cloud_visibility_label">Sichtweite:</string>
     <string name="no_data">-</string>
@@ -25,4 +25,11 @@
     <string name="home">Zuhause:</string>
     <string name="max">(max)</string>
     <string name="open_website">open website</string>
+    <string name="no_planes">Keine Flugzeuge in einem Radius von 20km in der Luft</string>
+    <string name="icao">ICAO:</string>
+    <string name="callsign">Callsign:</string>
+    <string name="entfernung">Entfernung:</string>
+    <string name="typ">Typ:</string>
+    <string name="fluggesellschaft">Fluggesellschaft:</string>
+    <string name="height">Flughöhe</string>
 </resources>
