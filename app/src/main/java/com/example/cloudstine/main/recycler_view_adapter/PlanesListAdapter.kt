@@ -1,4 +1,4 @@
-package com.example.cloudstine.main.RecyclerViewAdapter
+package com.example.cloudstine.main.recycler_view_adapter
 
 import android.location.Location
 import android.view.LayoutInflater
@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cloudstine.api.model.PlaneEntity
 import com.example.cloudstine.databinding.PlaneListItemBinding
-import okhttp3.Cache.Companion.hasVaryAll
 
 class PlanesListAdapter (private val data: List<PlaneEntity>, private val location: Location) : RecyclerView.Adapter<PlanesListAdapter.ViewHolder>() {
 
@@ -22,7 +21,8 @@ class PlanesListAdapter (private val data: List<PlaneEntity>, private val locati
         fun bind(planeEntity: PlaneEntity, location: Location) {
             binding.icaoData.text = planeEntity.icao24
             binding.callsignData.text = planeEntity.callsign
-            binding.distanceData.text = planeEntity.distance.toString().plus(" m")
+            planeEntity.baro_altitude?.let { binding.heightData.text = it.toString().plus(" m") }
+            planeEntity.distance?.let { binding.distanceData.text = it.toString().plus(" m") }
 /*
             Glide.with(itemView.context)
                 .load(questionEntity.owner.profileImage)

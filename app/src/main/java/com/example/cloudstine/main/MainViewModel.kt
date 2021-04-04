@@ -3,8 +3,6 @@ package com.example.cloudstine.main
 import android.app.Activity
 import android.content.SharedPreferences
 import android.location.Location
-import android.util.Log
-import androidx.core.content.contentValuesOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -14,23 +12,46 @@ import com.example.cloudstine.repositories.CloudRepository
 import com.example.cloudstine.repositories.PlaneRepository
 import kotlinx.coroutines.launch
 import java.lang.StringBuilder
-import java.util.*
 import kotlin.math.roundToInt
 
 class MainViewModel(activity: Activity) : ViewModel() {
 
     companion object {
+        /*
+         * shared preferences
+         */
         const val SHOW_INFO = "showInfo"
-
         const val USE_HAMBURG = "useHamburg"
-        const val STANDARD_ID = "standardId"
-        const val STANDARD_NAME = "standardName"
 
-        private const val RADIUS = 1f //0.3f
+        const val CLOUD_LOCATION_ID = "standardId"
+        const val CLOUD_LOCATION_NAME = "standardName"
 
+        const val PLANES_LOCATION_LAT = "LOCATION_LATITUDE"
+        const val PLANES_LOCATION_LON = "LOCATION_LONGITUDE"
+        const val PLANES_LOCATION_PROV = "LOCATION_PROVIDER"
+
+
+        /*
+         *   crawler constants
+         */
         private const val START_OPACITY = "Bewölkung"
         private const val START_HEIGHT = "Wolkenhöhe"
         private const val START_VISIBILITY = "Sichtweite"
+
+        /*
+         * startup Hamburg data
+         */
+
+        const val LOCATION_ID_HAMBURG = 178556
+        const val LOCATION_NAME_HAMBURG = "Hamburg"
+        const val LOCATION_LAT_HAMBURG = 53.5511.toLong()
+        const val LOCATION_LON_HAMBURG = 9.9937.toLong()
+        const val LOCATION_PROV_HAMBURG = "fused"
+
+        /*
+         * other
+         */
+        private const val RADIUS = 1f //0.3f
     }
 
     private val sharedPreferences: SharedPreferences = activity.getSharedPreferences("main", 0)
@@ -62,6 +83,9 @@ class MainViewModel(activity: Activity) : ViewModel() {
     private val _location = MutableLiveData<Location>()
     val location: LiveData<Location> = _location
 
+    private val _gpsLocation = MutableLiveData<Location>()
+    val gpsLocation: LiveData<Location> = _gpsLocation
+
     private val _locationId = MutableLiveData<Int>()
     val locationId: LiveData<Int> = _locationId
 
@@ -75,13 +99,7 @@ class MainViewModel(activity: Activity) : ViewModel() {
     fun getCloudData() {
         viewModelScope.launch {
             try {
-                var useId = _locationId.value
-                if (sharedPreferences.getBoolean(USE_HAMBURG, true)) {
-                    useId = sharedPreferences.getInt(STANDARD_ID, 178556)
-                    _locationName.postValue(sharedPreferences.getString(STANDARD_NAME, "Hamburg"))
-                }
-
-                val allData = cloudRepository.getData(useId.toString()).body()!!.string()
+                val allData = cloudRepository.getData(_locationId.value.toString()).body()!!.string()
                 if (allData.substring(0, 100).contains("Ungewöhnliche Zugriffe erkannt")) {
                     throw(Exception("captcha"))
                 }
@@ -100,14 +118,17 @@ class MainViewModel(activity: Activity) : ViewModel() {
     fun getPlaneData() {
         if (_location.value != null) {
             val locationSquare = getLocationSquare(_location.value!!.latitude.toFloat(), location.value!!.longitude.toFloat())
-            Log.i("jan", locationSquare.contentToString())
             viewModelScope.launch {
                 try {
                     val unsortedList = planeRepository.getData(locationSquare[0], locationSquare[1], locationSquare[2], locationSquare[3])
-                    _planeList.postValue(sortList(unsortedList))
-                    _planeStatus.postValue("success")
+                    if (unsortedList != null) {
+                        _planeList.postValue(sortList(unsortedList))
+                        _planeStatus.postValue("success")
+                    } else {
+                        _planeStatus.postValue("noPlanes")
+                    }
                 } catch (exception: Exception) {
-                    _planeStatus.postValue(exception.toString())
+                    _planeStatus.postValue(exception.message ?: "plane error")
                 }
             }
         } else _planeStatus.postValue("GPS angeschaltet?")
@@ -124,7 +145,6 @@ class MainViewModel(activity: Activity) : ViewModel() {
                     _location.value!!.longitude,
                     results
                 )
-                Log.i("jan", results.contentToString())
             }
             planeEntity.distance = results[0].roundToInt()
         }
@@ -137,21 +157,38 @@ class MainViewModel(activity: Activity) : ViewModel() {
         return allData.substring(startIndex, endIndex)
     }
 
-    fun storeValues(id: Int, name: String) {
+    fun storeCloudValues(id: Int, name: String) {
         _locationId.value = id
         _locationName.value = name
     }
 
-    fun storeNewStandardValues() {
-        sharedPreferences.edit().let {
-            it.putInt(STANDARD_ID, _locationId.value ?: 178556)
-            it.putString(STANDARD_NAME, _locationName.value ?: "Hamburg")
-            it.apply()
-        }
+    fun storeNewLocation(location: Location?) {
+        location?.let { _location.value = it}
     }
 
-    fun storeNewLocation(location: Location) {
-        _location.value = location
+    fun storeNewLocationWithGpsLoc() {
+        _gpsLocation.value?.let { _location.value = it}
+    }
+
+    fun storeNewGPSLocation(location: Location?) {
+        location?.let { _gpsLocation.value = it}
+    }
+
+    fun storeNewStandardValues() {
+        sharedPreferences.edit().let { edit ->
+            _locationId.value?.let { id -> edit.putInt(CLOUD_LOCATION_ID, id) } ?: kotlin.run { edit.remove(CLOUD_LOCATION_ID) }
+            _locationName.value?.let { name -> edit.putString(CLOUD_LOCATION_NAME, name) } ?: kotlin.run { edit.remove(CLOUD_LOCATION_NAME) }
+            _location.value?.let { location ->
+                edit.putLong(PLANES_LOCATION_LAT, java.lang.Double.doubleToRawLongBits(location.latitude))
+                edit.putLong(PLANES_LOCATION_LON, java.lang.Double.doubleToRawLongBits(location.longitude))
+                edit.putString(PLANES_LOCATION_PROV, location.provider)
+            } ?: kotlin.run{
+                edit.remove(PLANES_LOCATION_LAT)
+                edit.remove(PLANES_LOCATION_LON)
+                edit.remove(PLANES_LOCATION_PROV)
+            }
+            edit.apply()
+        }
     }
 
     fun cutUnit(height: String): Float {

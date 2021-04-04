@@ -10,13 +10,12 @@ data class PlanesResponseDto(
     val time: Int,
 
     @SerializedName("states")
-    val states: List<List<Any?>>
+    val states: List<List<Any?>>?
 ) {
     fun toAppModel(): PlanesListEntity {
         return PlanesListEntity(
             time,
-            states.map { list ->
-                Log.i("janCast", list.toString())
+            states!!.map { list ->
                 PlaneEntity(
                     list[0] as String,
                     list[1] as String,
@@ -36,6 +35,7 @@ data class PlanesResponseDto(
                     list[16] as Double,
                     null
                 )
-            })
+            }
+        )
     }
 }
