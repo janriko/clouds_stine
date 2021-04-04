@@ -5,5 +5,5 @@
     android:layout_gravity="center"
     android:scaleX="0.6"
     android:scaleY="0.6"
-    android:contentDescription="@string/sheiwe_logo_description"
+    android:contentDescription="@string/logo_description"
     android:src="@drawable/ic_splash_clouds_pastel" />

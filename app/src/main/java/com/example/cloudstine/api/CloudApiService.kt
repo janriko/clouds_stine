@@ -5,13 +5,12 @@ import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
 
-interface UserApiService {
+interface CloudApiService {
 
     companion object {
-        const val BASE_URL = "https://14-tage-wettervorhersage.de"
+        const val CLOUDS_BASE_URL = "https://14-tage-wettervorhersage.de"
     }
 
     @GET("/wetter/aktuell/{locationId}/")
-    suspend fun getData(@Path("locationId") locationId: String): Response<ResponseBody>
-
+    suspend fun getCloudData(@Path("locationId") locationId: String): Response<ResponseBody>
 }

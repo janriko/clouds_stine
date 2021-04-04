@@ -26,7 +26,7 @@
 
                     <TextView
                         android:id="@+id/cloud_opacity_title"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_alignParentStart="true"
                         android:layout_margin="@dimen/two_grid_unit"
@@ -58,14 +58,14 @@
 
                     <TextView
                         android:id="@+id/cloud_height_title_meter"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_alignParentStart="true"
                         android:layout_marginStart="@dimen/two_grid_unit"
                         android:layout_marginTop="@dimen/two_grid_unit"
-                        android:layout_marginEnd="@dimen/two_grid_unit"
+                        android:layout_marginEnd="@dimen/six_grid_unit"
                         android:layout_marginBottom="@dimen/two_grid_unit"
-                        android:layout_toStartOf="@+id/cloud_height_max"
+                        android:layout_toStartOf="@+id/cloud_height_data_feet"
                         android:text="@string/cloud_height_meter_label"
                         android:textSize="24sp" />
 
@@ -77,7 +77,7 @@
                         android:layout_toStartOf="@+id/cloud_height_data_feet"
                         android:text="@string/max"
                         android:textSize="12sp"
-                        android:visibility="gone" />
+                        android:visibility="visible" />
 
                     <TextView
                         android:id="@+id/cloud_height_data_feet"
@@ -114,7 +114,7 @@
 
                     <TextView
                         android:id="@+id/cloud_visibility_title"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_alignParentStart="true"
                         android:layout_margin="@dimen/two_grid_unit"
@@ -177,7 +177,7 @@
                         android:id="@+id/location_divider"
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:layout_marginHorizontal="@dimen/four_grid_unit"
+                        android:layout_marginHorizontal="@dimen/two_grid_unit"
                         android:background="?android:attr/listDivider"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
@@ -251,10 +251,47 @@
                 </LinearLayout>
 
                 <TextView
-                    android:id="@+id/tempData"
+                    android:id="@+id/tempDataClouds"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingBottom="@dimen/two_grid_unit" />
+                    android:paddingBottom="@dimen/two_grid_unit"
+                    android:visibility="gone"/>
+
+                <TextView
+                    android:id="@+id/tempDataPlanes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="@dimen/two_grid_unit"
+                    android:visibility="gone"/>
+
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/linear_progress_indicator_planes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:indeterminate="true" />
+
+                <TextView
+                    android:id="@+id/no_planes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="@dimen/two_grid_unit"
+                    android:textAlignment="center"
+                    android:text="@string/no_planes"
+                    android:visibility="gone"/>
+
+               <androidx.recyclerview.widget.RecyclerView
+                   android:id="@+id/planes_recycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    tools:listitem="@layout/plane_list_item"
+                    tools:itemCount="4"/>
+
+                <WebView
+                    android:id="@+id/webview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/two_grid_unit"
+                    android:visibility="gone" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/open_web_button"
@@ -262,16 +299,11 @@
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="80dp"
                     android:layout_marginTop="@dimen/six_grid_unit"
+                    android:layout_marginBottom="@dimen/four_grid_unit"
                     android:background="@color/black"
                     android:text="@string/open_website"
                     android:textSize="12sp"
                     android:visibility="visible" />
-
-                <WebView
-                    android:id="@+id/webview"
-                    android:layout_width="match_parent"
-                    android:layout_height="400dp"
-                    android:visibility="gone" />
             </LinearLayout>
 
 
