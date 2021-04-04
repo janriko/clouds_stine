@@ -137,7 +137,7 @@ class MainFragment : Fragment(R.layout.main_fragment) {
             binding.noPlanes.isVisible = false
             binding.planesRecycler.let {
                 it.isVisible = true
-                it.adapter = PlanesListAdapter(planes.states, mainViewModel.location.value!!)
+                it.adapter = PlanesListAdapter(planes.states)
                 it.layoutManager = LinearLayoutManager(requireContext())
             }
         } else {

@@ -16,9 +16,6 @@
         android:name="com.example.cloudstine.main.MainFragment"
         android:label="@string/main_fragment_label"
         tools:layout="@layout/main_fragment">
-        <action
-            android:id="@+id/action_mainFragment_to_webViewFragment"
-            app:destination="@id/webViewFragment" />
         <argument
             android:name="current_location_id"
             app:argType="integer"
@@ -27,15 +24,13 @@
             android:name="current_location_name"
             app:argType="string"
             android:defaultValue="-" />
+        <action
+            android:id="@+id/action_mainFragment_to_planeDetailFragment2"
+            app:destination="@id/planeDetailFragment2" />
     </fragment>
     <fragment
-        android:id="@+id/webViewFragment"
-        android:name="com.example.cloudstine.WebView.WebViewFragment"
-        android:label="WebViewFragment" >
-        <action
-            android:id="@+id/action_webViewFragment_to_mainFragment"
-            app:destination="@id/mainFragment"
-            app:popUpTo="@id/nav_graph" />
-    </fragment>
+        android:id="@+id/planeDetailFragment2"
+        android:name="com.example.cloudstine.plane_detail.PlaneDetailFragment"
+        android:label="PlaneDetailFragment" />
 
 </navigation>
