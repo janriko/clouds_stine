@@ -11,7 +11,6 @@ import com.example.cloudstine.api.model.PlanesListEntity
 import com.example.cloudstine.repositories.CloudRepository
 import com.example.cloudstine.repositories.PlaneRepository
 import kotlinx.coroutines.launch
-import java.lang.StringBuilder
 import kotlin.math.roundToInt
 
 class MainViewModel(activity: Activity) : ViewModel() {
@@ -106,7 +105,9 @@ class MainViewModel(activity: Activity) : ViewModel() {
 
                 _cloudOpacity.postValue(getCutData(allData, START_OPACITY, 30))
                 _cloudHeightMeter.postValue(getCutData(allData, START_HEIGHT, 32))
-                _cloudHeightFeet.postValue(convertHeightToFeet(getCutData(allData, START_HEIGHT, 32)))
+                val noUnit = cutUnit(getCutData(allData, START_HEIGHT, 32))
+                _showCloudHeightMax.value = noUnit == 12192.0f
+                _cloudHeightFeet.postValue(convertHeightToFeet(noUnit))
                 _cloudVisibility.postValue(getCutData(allData, START_VISIBILITY, 31))
                 _cloudStatus.postValue("success")
             } catch (exception: Exception) {
@@ -122,6 +123,9 @@ class MainViewModel(activity: Activity) : ViewModel() {
                 try {
                     val unsortedList = planeRepository.getData(locationSquare[0], locationSquare[1], locationSquare[2], locationSquare[3])
                     if (unsortedList != null) {
+                        for (plane in unsortedList.states){
+                            plane.height_feet = plane.geo_altitude?.let { convertHeightToFeet(it.toFloat()) }
+                        }
                         _planeList.postValue(sortList(unsortedList))
                         _planeStatus.postValue("success")
                     } else {
@@ -191,17 +195,15 @@ class MainViewModel(activity: Activity) : ViewModel() {
         }
     }
 
-    fun cutUnit(height: String): Float {
+    private fun cutUnit(height: String): Float {
         val noMHeight = (height.substring(0, height.indexOf("m") - 1))
         val germanWithoutFirst = noMHeight.replace(".", "")
         val englishComma = germanWithoutFirst.replace(",", ".")
         return englishComma.toFloat()
     }
 
-    private fun convertHeightToFeet(height: String): String {
-        val floatHeight = cutUnit(height)
-        _showCloudHeightMax.value = floatHeight == 12192.0f
-        val heightInFeet = floatHeight * 3.2808f
+    fun convertHeightToFeet(height: Float): String {
+        val heightInFeet = height * 3.2808f
         val roundedHeight = heightInFeet.roundToInt()
         val feetString = roundedHeight.toString()
         val stringWithDot = when (feetString.length) {

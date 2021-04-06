@@ -31,6 +31,10 @@
     <fragment
         android:id="@+id/planeDetailFragment2"
         android:name="com.example.cloudstine.plane_detail.PlaneDetailFragment"
-        android:label="PlaneDetailFragment" />
+        android:label="PlaneDetailFragment" >
+        <argument
+            android:name="plane"
+            app:argType="com.example.cloudstine.api.model.PlaneEntity" />
+    </fragment>
 
 </navigation>

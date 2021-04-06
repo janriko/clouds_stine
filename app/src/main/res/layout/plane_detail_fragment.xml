@@ -60,7 +60,15 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/two_grid_unit"
                 android:layout_marginBottom="1dp"
-                android:text="@string/height" />
+                android:text="@string/height_feet" />
+
+            <TextView
+                android:id="@+id/height_meter_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/two_grid_unit"
+                android:layout_marginBottom="1dp"
+                android:text="@string/height_meter" />
 
             <TextView
                 android:id="@+id/plane_type_title"
@@ -137,7 +145,21 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/one_grid_unit"
                 android:text="@string/no_data"
-                tools:text="4000ft" />
+                tools:text="4.000 ft" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="@dimen/one_grid_unit"
+                android:background="?android:attr/listDivider" />
+
+            <TextView
+                android:id="@+id/height_meter_data"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/one_grid_unit"
+                android:text="@string/no_data"
+                tools:text="1.200 m" />
 
             <View
                 android:layout_width="match_parent"

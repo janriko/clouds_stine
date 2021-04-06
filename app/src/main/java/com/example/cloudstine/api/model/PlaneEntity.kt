@@ -1,8 +1,11 @@
 package com.example.cloudstine.api.model
 
 
+import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import kotlinx.android.parcel.Parcelize
 
+@Parcelize
 data class PlaneEntity(
     @SerializedName("icao24")
     val icao24: String,
@@ -52,5 +55,6 @@ data class PlaneEntity(
     @SerializedName("position_source")
     val position_source: Double,
 
-    var distance: Int? = null
-)
+    var distance: Int? = null,
+    var height_feet: String? = null
+) : Parcelable
