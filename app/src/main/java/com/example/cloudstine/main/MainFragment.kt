@@ -23,9 +23,11 @@ import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.cloudstine.R
 import com.example.cloudstine.api.CloudApiService
+import com.example.cloudstine.api.model.PlaneEntity
 import com.example.cloudstine.api.model.PlanesListEntity
 import com.example.cloudstine.databinding.MainFragmentBinding
 import com.example.cloudstine.main.recycler_view_adapter.PlanesListAdapter
@@ -76,7 +78,7 @@ class MainFragment : Fragment(R.layout.main_fragment) {
         setupViewModel()
         setObservers()
         setListener()
-        setupWebView()
+        setupWebViewClouds()
 
         checkLocPermissionAndSetLocClient()
         setRefreshTimer()
@@ -96,6 +98,7 @@ class MainFragment : Fragment(R.layout.main_fragment) {
     }
 
     private fun setUpInitialViews() {
+        binding.swiperefreshMain.setColorSchemeColors(getColor(requireContext(), R.color.brightPrimary))
         isThisInternalRadioButtonCall = true
         binding.radioGroup.check(
             if (sharedPref.getBoolean(MainViewModel.USE_HAMBURG, true)) {
@@ -137,13 +140,17 @@ class MainFragment : Fragment(R.layout.main_fragment) {
             binding.noPlanes.isVisible = false
             binding.planesRecycler.let {
                 it.isVisible = true
-                it.adapter = PlanesListAdapter(planes.states)
+                it.adapter = PlanesListAdapter(planes.states, ::onItemClick)
                 it.layoutManager = LinearLayoutManager(requireContext())
             }
         } else {
             binding.planesRecycler.isVisible = false
             binding.noPlanes.isVisible = true
         }
+    }
+
+    private fun onItemClick(plane: PlaneEntity){
+        findNavController().navigate(MainFragmentDirections.actionMainFragmentToPlaneDetailFragment2(plane))
     }
 
     private fun setRefreshTimer() {
@@ -208,12 +215,9 @@ class MainFragment : Fragment(R.layout.main_fragment) {
         }
     }
 
-    private fun setupWebView() {
-        binding.swiperefreshMain.let {
-            it.setColorSchemeColors(getColor(requireContext(), R.color.green))
-            it.isRefreshing = true
-        }
-        binding.webview.let {
+    private fun setupWebViewClouds() {
+        binding.swiperefreshMain.isRefreshing = true
+        binding.webviewClouds.let {
             it.settings.javaScriptEnabled = true
             it.webChromeClient = object : WebChromeClient() {
                 override fun onGeolocationPermissionsShowPrompt(origin: String, callback: GeolocationPermissions.Callback) {
@@ -228,7 +232,7 @@ class MainFragment : Fragment(R.layout.main_fragment) {
 
                 override fun onPageFinished(view: WebView?, url: String) {
                     super.onPageFinished(view, url)
-                    binding.webview.isVisible = false
+                    it.isVisible = false
                     when {
                         url == ("https://14-tage-wettervorhersage.de/") -> getCloudDataFromLocation()
                         url.substring(30).contains("vorhersage") -> {
@@ -237,7 +241,6 @@ class MainFragment : Fragment(R.layout.main_fragment) {
                             val locationName = subUrl.substring(subUrl.indexOf("wetter") + 7, subUrl.indexOf("vorhersage") - 1)
                             mainViewModel.storeCloudValues(locationId, locationName)
 
-                            binding.swiperefreshMain.setColorSchemeColors(getColor(requireContext(), R.color.blue))
                             mainViewModel.getCloudData()
                         }
                         url.contains("captcha") -> {
@@ -246,7 +249,7 @@ class MainFragment : Fragment(R.layout.main_fragment) {
                             binding.cloudHeightDataFeet.text = "-"
                             binding.cloudHeightDataMeter.text = ""
                             binding.cloudVisibilityData.text = "-"
-                            binding.webview.isVisible = true
+                            it.isVisible = true
                         }
                         else -> {
                             requestFinishedClouds("Server für Wetteranfrage reagiert nicht")
@@ -297,7 +300,7 @@ class MainFragment : Fragment(R.layout.main_fragment) {
             )
             mainViewModel.getCloudData()
         } else {
-            binding.webview.loadUrl("javascript:getLocation();")
+            binding.webviewClouds.loadUrl("javascript:getLocation();")
         }
     }
 
@@ -363,9 +366,9 @@ class MainFragment : Fragment(R.layout.main_fragment) {
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+    override fun onDetach() {
+        super.onDetach()
         planeTimer.cancel()
+        _binding = null
     }
 }

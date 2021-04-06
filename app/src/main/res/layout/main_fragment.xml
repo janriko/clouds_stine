@@ -242,12 +242,6 @@
                         android:layout_marginVertical="@dimen/one_grid_unit"
                         android:text="@string/saving_info"
                         android:textSize="12sp" />
-
-                    <View
-                        android:id="@+id/info_view"
-                        android:layout_width="match_parent"
-                        android:layout_height="2dp"
-                        android:background="?android:attr/listDivider" />
                 </LinearLayout>
 
                 <TextView
@@ -256,6 +250,12 @@
                     android:layout_height="wrap_content"
                     android:paddingBottom="@dimen/two_grid_unit"
                     android:visibility="gone"/>
+
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="2dp"
+                    android:background="@color/darkPrimary" />
 
                 <TextView
                     android:id="@+id/tempDataPlanes"
@@ -287,7 +287,7 @@
                     tools:itemCount="4"/>
 
                 <WebView
-                    android:id="@+id/webview"
+                    android:id="@+id/webview_clouds"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="@dimen/two_grid_unit"

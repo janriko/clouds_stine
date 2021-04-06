@@ -1,13 +1,12 @@
 package com.example.cloudstine.main.recycler_view_adapter
 
-import android.location.Location
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cloudstine.api.model.PlaneEntity
 import com.example.cloudstine.databinding.PlaneListItemBinding
 
-class PlanesListAdapter (private val data: List<PlaneEntity>) : RecyclerView.Adapter<PlanesListAdapter.ViewHolder>() {
+class PlanesListAdapter (private val data: List<PlaneEntity>, val onItemClick: (PlaneEntity) -> Unit) : RecyclerView.Adapter<PlanesListAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(PlaneListItemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
@@ -21,9 +20,11 @@ class PlanesListAdapter (private val data: List<PlaneEntity>) : RecyclerView.Ada
         fun bind(planeEntity: PlaneEntity) {
             binding.icaoData.text = planeEntity.icao24
             binding.callsignData.text = planeEntity.callsign
-            planeEntity.baro_altitude?.let { binding.heightData.text = it.toString().plus(" m") }
+            planeEntity.height_feet?.let { binding.heightData.text = it }     //{ binding.heightData.text = it.toString().plus(" m") }
             planeEntity.distance?.let { binding.distanceData.text = it.toString().plus(" m") }
-/*
+
+            binding.planeCard.setOnClickListener { onItemClick(planeEntity) }
+        /*
             Glide.with(itemView.context)
                 .load(questionEntity.owner.profileImage)
                 .apply(

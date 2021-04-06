@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="brightPrimary">#5CA4A9</color>
-    <color name="darkPrimary">#4D8E93</color>
+    <color name="brightPrimary">#d15545</color>
+    <color name="darkPrimary">#a34336</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
     <color name="red">#CA5374</color>
     <color name="green">#028F35</color>
     <color name="blue">#007BF3</color>
+
+    <color name="cloudBlue">#9BC1BC</color>
+    <color name="cloudRed">#F18C7E</color>
+    <color name="cloudYellow">#F4F1BB</color>
 </resources>
